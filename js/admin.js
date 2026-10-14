@@ -83,7 +83,7 @@ function pick(multi, cb) {
 }
 
 /* Form umum */
-function form(title, fs, o, ok) {
+function form(title, fs, o, ok, okLabel) {
   var m = el("div", "modal");
   var f = el("div", "card");
   var ins = {};
@@ -108,7 +108,7 @@ function form(title, fs, o, ok) {
 
   var b = el("div", "row");
   var c = el("button", null, "Batal");
-  var s = el("button", "pri", "OK");
+  var s = el("button", "pri", okLabel || "OK");
 
   c.type = s.type = "button";
 
@@ -565,7 +565,9 @@ function bar() {
       function (v) {
         Object.assign(D, v);
         chg();
-      }
+        save();
+      },
+      "Simpan"
     );
   };
 
@@ -617,27 +619,10 @@ function bar() {
     dateManager();
   };
 
-  /* Menu Simpan */
-  var s = el("button", "pri");
-  s.type = "button";
-  s.id = "save";
-  s.disabled = !dirty;
-
-  s.appendChild(
-    editorProfileIcon("M5 12.5l4.5 4.5L19 7.5")
-  );
-  s.appendChild(document.createTextNode("Simpan"));
-
-  s.onclick = function () {
-    p.classList.remove("on");
-    save();
-  };
-
   main.appendChild(t);
   main.appendChild(fb);
   main.appendChild(lb);
   main.appendChild(gb);
-  main.appendChild(s);
 
   /* Keluar */
   var spacer = el("div", "editor-menu-spacer");
@@ -681,7 +666,7 @@ function manager(title, build) {
   var f = el("div", "card");
   var body = el("div", "mbody");
   var r = el("div", "row");
-  var c = el("button", "pri", "Selesai");
+  var c = el("button", "pri", "Tutup");
 
   f.appendChild(el("h3", "script", title));
   f.appendChild(body);
@@ -690,6 +675,9 @@ function manager(title, build) {
   c.onclick = function () {
     m.remove();
     mgr = null;
+
+    /* Simpan otomatis kalau ada perubahan */
+    if (dirty) save();
   };
 
   r.appendChild(c);
@@ -703,6 +691,9 @@ function manager(title, build) {
     refresh: function () {
       body.innerHTML = "";
       build(body);
+
+      /* Tombol berubah jadi "Simpan" kalau ada perubahan */
+      c.textContent = dirty ? "Simpan" : "Tutup";
     }
   };
 

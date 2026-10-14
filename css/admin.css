@@ -790,3 +790,70 @@
     font-size: 1.9rem;
   }
 }
+
+/* Tombol ganti dan hapus foto profil */
+#adminUI .profile-photo-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+#adminUI .profile-photo-remove {
+  min-height: 0;
+  padding: 7px 14px;
+  color: #ff9bd9;
+  background: transparent;
+  border-color: #ff7fdc66;
+}
+
+#adminUI .profile-photo-remove:hover:not(:disabled) {
+  color: #fff;
+  background: #ff3b6b40;
+  border-color: #ff7fdc;
+}
+
+/* Tombol mata di kolom kata sandi (halaman login) */
+#firebaseAuth .pw-wrap {
+  position: relative;
+  display: block;
+}
+
+#firebaseAuth .pw-wrap input {
+  padding-right: 48px;
+}
+
+#firebaseAuth .card .pw-toggle {
+  position: absolute;
+  top: 50%;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  color: #ffd1ec;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  transform: translateY(-50%);
+}
+
+#firebaseAuth .card .pw-toggle:hover {
+  color: #fff;
+  background: #ffffff1a;
+}
+
+#firebaseAuth .pw-toggle .ic {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+}
+
+/* Sembunyikan ikon mata bawaan browser (Edge), supaya hanya ada satu */
+#firebaseAuth input::-ms-reveal,
+#firebaseAuth input::-ms-clear {
+  display: none;
+}

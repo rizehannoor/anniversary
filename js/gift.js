@@ -1,9 +1,6 @@
-/* Halaman Wishlist: ketuk bintang, pilih wishlist jalan minggu ini, tentukan tanggalnya */
-var giftOpen=false,picked=-1,pickDate="";
-$("#gift").onclick=function(){
-  var g=this;if(giftOpen)return;g.classList.add("shake");
-  setTimeout(function(){giftOpen=true;g.classList.add("done");g.textContent="\u2728";$("#coupon").textContent=D.gift;$("#coupon").classList.add("on");$("#giftHint").textContent="Pilih wishlist jalan kita minggu ini";renderGift()},900);
-};
+/* Halaman Wishlist: langsung tampil tanpa ketuk bintang. Pilih wishlist jalan minggu ini, lalu tentukan tanggalnya */
+var giftOpen=true,picked=-1,pickDate="";
+(function(){var g=$("#gift");g.classList.add("done");g.textContent="\u2728";g.disabled=true;g.removeAttribute("aria-label");g.setAttribute("aria-hidden","true");g.tabIndex=-1})();
 function pad(n){return("0"+n).slice(-2)}
 function isoDate(d){return d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate())}
 function niceDate(s){return new Date(s+"T00:00").toLocaleDateString("id-ID",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}
@@ -17,6 +14,8 @@ function saveCalendar(o,date){
 }
 function renderGift(){
   if(!giftOpen)return;
+  $("#coupon").textContent=D.gift;$("#coupon").classList.add("on");
+  $("#giftHint").textContent=picked>=0&&(D.dates||[])[picked]?"dengan sayang, "+D.him:"Pilih wishlist jalan kita minggu ini";
   var w=$("#dates");w.innerHTML="";w.classList.add("on");
   (D.dates||[]).forEach(function(o,i){
     var b=el("button","dt"+(i===picked?" sel":""));

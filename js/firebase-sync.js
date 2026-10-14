@@ -89,6 +89,11 @@ function centerElement(element, marginTop) {
 function showAuth() {
   if ($("#firebaseAuth")) return;
 
+  /* Bersihkan riwayat email lama yang pernah tersimpan di browser ini */
+  try {
+    localStorage.removeItem("our-anniversary:email-history");
+  } catch (e) {}
+
   var m = el("div", "modal");
   m.id = "firebaseAuth";
 
@@ -114,6 +119,57 @@ function showAuth() {
   pass.autocomplete = "current-password";
   pass.required = true;
 
+  /* Tombol mata: tampilkan atau sembunyikan kata sandi */
+  var passWrap = el("div", "pw-wrap");
+  var toggle = el("button", "pw-toggle");
+
+  toggle.type = "button";
+
+  function eyeIcon(slashed) {
+    var ns = "http://www.w3.org/2000/svg";
+    var svg = document.createElementNS(ns, "svg");
+    var paths = [
+      "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z",
+      "M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"
+    ];
+
+    if (slashed) paths.push("M4 4l16 16");
+
+    svg.setAttribute("class", "ic");
+    svg.setAttribute("viewBox", "0 0 24 24");
+    svg.setAttribute("aria-hidden", "true");
+
+    paths.forEach(function (d) {
+      var path = document.createElementNS(ns, "path");
+      path.setAttribute("d", d);
+      svg.appendChild(path);
+    });
+
+    return svg;
+  }
+
+  function syncToggle() {
+    var shown = pass.type === "text";
+
+    toggle.innerHTML = "";
+    toggle.appendChild(eyeIcon(shown));
+    toggle.setAttribute(
+      "aria-label",
+      shown ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"
+    );
+    toggle.setAttribute("aria-pressed", String(shown));
+  }
+
+  toggle.onclick = function () {
+    pass.type = pass.type === "password" ? "text" : "password";
+    syncToggle();
+    pass.focus();
+  };
+
+  syncToggle();
+  passWrap.appendChild(pass);
+  passWrap.appendChild(toggle);
+
   var row = el("div", "row");
   row.style.display = "flex";
   row.style.justifyContent = "center";
@@ -132,7 +188,7 @@ function showAuth() {
 
   centerElement(resend, 12);
 
-  [h, p, email, pass, msg].forEach(function (x) {
+  [h, p, email, passWrap, msg].forEach(function (x) {
     f.appendChild(x);
   });
 
