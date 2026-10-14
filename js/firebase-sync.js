@@ -54,11 +54,10 @@ function editorAuthenticated(user) {
 /* Menyembunyikan menu admin */
 function hideAdmin() {
   admin = false;
-
   document.body.classList.remove("adm");
 
-  var menu = document.querySelector(".menu2");
-  if (menu) menu.remove();
+  var ui = document.querySelector("#adminUI");
+  if (ui) ui.innerHTML = "";
 }
 
 /* Menampilkan admin setelah autentikasi valid */
@@ -70,12 +69,13 @@ function refreshAdminAfterAuth(user) {
 
   var params = new URLSearchParams(location.search);
 
-  /* Di website publik, menu hanya tampil pada mode edit */
-  if (!isLocal() && !params.has(ADMIN_PARAM)) {
+  /* ?view selalu menampilkan halaman pengunjung */
+  if (params.has(VIEW_PARAM)) {
     hideAdmin();
     return;
   }
 
+  /* Editor dapat mengedit dari URL utama */
   initAdmin();
 }
 
@@ -118,7 +118,7 @@ function showAuth() {
   pass.autocomplete = "current-password";
   pass.required = true;
 
-  /* Tombol mata: tampilkan atau sembunyikan kata sandi */
+  /* Tombol mata kata sandi */
   var passWrap = el("div", "pw-wrap");
   var toggle = el("button", "pw-toggle");
 
@@ -247,26 +247,7 @@ function showAuth() {
         return;
       }
 
-      /*
-       * Pertahankan maksud masuk ke mode edit.
-       * Jika login dimulai tanpa ?edit, tambahkan parameter.
-       */
-      var params = new URLSearchParams(location.search);
-
-      if (!isLocal() && !params.has(ADMIN_PARAM)) {
-        params.set(ADMIN_PARAM, "");
-
-        var query = params.toString();
-
-        history.replaceState(
-          null,
-          "",
-          location.pathname +
-            (query ? "?" + query : "") +
-            location.hash
-        );
-      }
-
+      /* Tidak mengubah URL atau menambahkan ?edit */
       msg.textContent = "Login berhasil. Memuat data...";
       /* Menu admin diaktifkan oleh onAuthStateChanged. */
     } catch (e) {
@@ -385,10 +366,6 @@ function authError(e) {
     return "Domain website belum diizinkan untuk proses autentikasi.";
   }
 
-  if (e.code === "auth/too-many-requests") {
-    return "Terlalu banyak percobaan. Coba lagi nanti.";
-  }
-
   return "Gagal: " + (
     e.message || e.code || "Kesalahan tidak diketahui."
   );
@@ -430,7 +407,6 @@ function bootCloud() {
     fbUser = user;
     fbReady = true;
 
-    /* Tidak ada pengguna yang login */
     if (!user) {
       if (fbUnsub) {
         fbUnsub();
@@ -442,11 +418,6 @@ function bootCloud() {
       return;
     }
 
-    /*
-     * Akun belum terverifikasi:
-     * sembunyikan admin, tetapi jangan melakukan signOut
-     * di listener ini. Proses login/resend yang mengatur sesi.
-     */
     if (!user.emailVerified) {
       hideAdmin();
       showAuth();
@@ -461,7 +432,6 @@ function bootCloud() {
       return;
     }
 
-    /* Hanya editor yang diizinkan yang boleh melanjutkan */
     if (!isAllowedEditor(user)) {
       hideAdmin();
 
@@ -483,7 +453,6 @@ function bootCloud() {
       return;
     }
 
-    /* Pengguna sudah terverifikasi dan diizinkan */
     var modal = $("#firebaseAuth");
     if (modal) modal.remove();
 
