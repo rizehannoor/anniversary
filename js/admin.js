@@ -145,7 +145,6 @@ function chg() {
 
   render();
 
-  /* render() mungkin membangun ulang tombol Simpan */
   saveButton = document.querySelector("#save");
   if (saveButton) saveButton.disabled = false;
 }
@@ -174,7 +173,6 @@ async function logoutAdmin() {
       });
     }
 
-    /* Kembali ke halaman login editor */
     window.location.replace(
       window.location.pathname + "?edit"
     );
@@ -184,7 +182,267 @@ async function logoutAdmin() {
   }
 }
 
-/* Membuat menu edit tanpa tombol Terbitkan */
+/* =====================================================
+   PROFIL EDITOR
+   Nama dan foto disimpan berdasarkan email di browser.
+   Email akun Firebase tidak dapat diedit dari menu ini.
+   ===================================================== */
+
+/* Email akun Firebase */
+function editorProfileEmail() {
+  if (
+    typeof fbAuth !== "undefined" &&
+    fbAuth &&
+    fbAuth.currentUser
+  ) {
+    return fbAuth.currentUser.email || "";
+  }
+
+  if (typeof fbUser !== "undefined" && fbUser) {
+    return fbUser.email || "";
+  }
+
+  return "";
+}
+
+/* Kunci penyimpanan unik per email */
+function editorProfileKey() {
+  return "anniversaryEditorProfileV1:" +
+    editorProfileEmail().toLowerCase();
+}
+
+/* Nama bawaan */
+function editorProfileDefaultName(email) {
+  return (email || "Editor").split("@")[0];
+}
+
+/* Avatar bawaan berbentuk ilustrasi manusia */
+function editorProfileDefaultAvatar() {
+  var svg =
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">' +
+    '<defs>' +
+    '<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">' +
+    '<stop offset="0" stop-color="#7a1590"/>' +
+    '<stop offset="1" stop-color="#ff7fdc"/>' +
+    '</linearGradient>' +
+    '</defs>' +
+    '<rect width="128" height="128" rx="64" fill="url(#bg)"/>' +
+    '<circle cx="64" cy="46" r="25" fill="#f7d9ff"/>' +
+    '<path d="M18 124c3-29 20-44 46-44s43 15 46 44" fill="#f7d9ff"/>' +
+    '<path d="M40 44c0-17 10-28 25-28 14 0 25 11 25 27-7-3-14-10-18-17-7 10-18 16-32 18z" fill="#4a0a5e"/>' +
+    '</svg>';
+
+  return "data:image/svg+xml;charset=UTF-8," +
+    encodeURIComponent(svg);
+}
+
+/* Membaca profil dari localStorage */
+function editorProfileRead() {
+  var email = editorProfileEmail();
+
+  var profile = {
+    name: editorProfileDefaultName(email),
+    photo: ""
+  };
+
+  try {
+    var raw = localStorage.getItem(editorProfileKey());
+
+    if (raw) {
+      var saved = JSON.parse(raw);
+
+      if (saved && typeof saved === "object") {
+        if (
+          typeof saved.name === "string" &&
+          saved.name.trim()
+        ) {
+          profile.name = saved.name.trim();
+        }
+
+        if (typeof saved.photo === "string") {
+          profile.photo = saved.photo;
+        }
+      }
+    }
+  } catch (e) {
+    console.warn("Profil editor tidak dapat dibaca:", e);
+  }
+
+  return profile;
+}
+
+/* Menyimpan profil */
+function editorProfileWrite(profile) {
+  try {
+    localStorage.setItem(
+      editorProfileKey(),
+      JSON.stringify(profile)
+    );
+
+    return true;
+  } catch (e) {
+    console.error("Profil editor gagal disimpan:", e);
+    toast("Profil gagal disimpan di browser");
+    return false;
+  }
+}
+
+/* Membuat ikon SVG */
+function editorProfileIcon(path) {
+  var ns = "http://www.w3.org/2000/svg";
+  var svg = document.createElementNS(ns, "svg");
+  var p = document.createElementNS(ns, "path");
+
+  svg.setAttribute("class", "ic");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("aria-hidden", "true");
+
+  p.setAttribute("d", path);
+  svg.appendChild(p);
+
+  return svg;
+}
+
+/* Mengedit nama dan foto profil */
+function editorProfileEdit() {
+  var current = editorProfileRead();
+  var email = editorProfileEmail();
+
+  var defaultAvatar = editorProfileDefaultAvatar();
+  var draftPhoto = current.photo || "";
+
+  var modal = el("div", "modal");
+  var card = el("div", "card profile-modal-card");
+
+  var title = el("h3", "script", "Edit profil");
+  var previewWrap = el("div", "profile-preview-wrap");
+  var preview = el("img", "profile-preview");
+  var photoButton = el("button", "profile-photo-button");
+
+  var help = el(
+    "p",
+    "profile-help",
+    "Nama dan foto disimpan di browser ini."
+  );
+
+  var nameLabel = el("label", null, "Nama tampilan");
+  var nameInput = el("input");
+
+  var emailLabel = el("label", null, "Email akun");
+  var emailInput = el("input");
+
+  var row = el("div", "row");
+  var cancel = el("button", null, "Batal");
+  var saveProfile = el("button", "pri", "Simpan profil");
+
+  preview.alt = "Pratinjau foto profil";
+  preview.src = draftPhoto || defaultAvatar;
+
+  photoButton.type = "button";
+  photoButton.appendChild(
+    editorProfileIcon(
+      "M4 7h3l2-3h6l2 3h3v12H4z"
+    )
+  );
+  photoButton.appendChild(
+    document.createTextNode(" Ganti foto")
+  );
+
+  nameInput.type = "text";
+  nameInput.maxLength = 60;
+  nameInput.required = true;
+  nameInput.value = current.name;
+
+  emailInput.type = "email";
+  emailInput.value = email;
+  emailInput.readOnly = true;
+
+  nameLabel.appendChild(nameInput);
+  emailLabel.appendChild(emailInput);
+
+  cancel.type = "button";
+  saveProfile.type = "button";
+
+  /* Memilih foto profil */
+  photoButton.onclick = function () {
+    var input = document.createElement("input");
+
+    input.type = "file";
+    input.accept = "image/*";
+
+    input.onchange = function () {
+      var file = input.files && input.files[0];
+
+      if (!file) return;
+
+      if (!file.type.startsWith("image/")) {
+        toast("Pilih file gambar");
+        return;
+      }
+
+      compress(file)
+        .then(function (data) {
+          draftPhoto = data;
+          preview.src = data;
+        })
+        .catch(function (e) {
+          console.error(e);
+          toast("Foto gagal dibaca");
+        });
+    };
+
+    input.click();
+  };
+
+  cancel.onclick = function () {
+    modal.remove();
+  };
+
+  /* Simpan perubahan profil */
+  saveProfile.onclick = function () {
+    var name = nameInput.value.trim();
+
+    if (!name) {
+      toast("Nama tampilan tidak boleh kosong");
+      nameInput.focus();
+      return;
+    }
+
+    if (
+      editorProfileWrite({
+        name: name,
+        photo: draftPhoto
+      })
+    ) {
+      modal.remove();
+      bar();
+      toast("Profil berhasil disimpan");
+    }
+  };
+
+  row.appendChild(cancel);
+  row.appendChild(saveProfile);
+
+  previewWrap.appendChild(preview);
+  previewWrap.appendChild(photoButton);
+
+  card.appendChild(title);
+  card.appendChild(previewWrap);
+  card.appendChild(nameLabel);
+  card.appendChild(emailLabel);
+  card.appendChild(help);
+  card.appendChild(row);
+
+  modal.appendChild(card);
+
+  (document.querySelector("#adminUI") || document.body)
+    .appendChild(modal);
+}
+
+/* =====================================================
+   SIDEBAR EDITOR
+   ===================================================== */
+
 function bar() {
   var u = document.querySelector("#adminUI");
 
@@ -201,31 +459,67 @@ function bar() {
   var b = el("div", "menu2");
   var h = el("button", "burger", "☰");
   var p = el("div", "panel");
-  var t = el("button");
-  var s = el("button", "pri");
 
-  h.type = t.type = s.type = "button";
-
+  h.type = "button";
   h.setAttribute("aria-label", "Menu edit");
   h.setAttribute("aria-expanded", "false");
-
-  t.innerHTML =
-    '<svg class="ic" viewBox="0 0 24 24">' +
-    '<path d="M4 20h4L19 9l-4-4L4 16z"/>' +
-    "</svg> Teks";
-
-  s.innerHTML =
-    '<svg class="ic" viewBox="0 0 24 24">' +
-    '<path d="M5 12.5l4.5 4.5L19 7.5"/>' +
-    "</svg> Simpan";
-
-  s.id = "save";
-  s.disabled = !dirty;
 
   h.onclick = function () {
     var opened = p.classList.toggle("on");
     h.setAttribute("aria-expanded", String(opened));
   };
+
+  /* Profil */
+  var profile = editorProfileRead();
+  var email = editorProfileEmail();
+
+  var profileBox = el("div", "editor-profile");
+  var avatar = el("img", "editor-avatar");
+  var profileInfo = el("div", "editor-profile-info");
+
+  var profileName = el(
+    "div",
+    "editor-profile-name",
+    profile.name
+  );
+
+  var profileEmail = el(
+    "div",
+    "editor-profile-email",
+    email || "Akun editor"
+  );
+
+  var editProfile = el(
+    "button",
+    "editor-profile-edit",
+    "Edit profil"
+  );
+
+  avatar.alt = "Foto profil";
+  avatar.src = profile.photo || editorProfileDefaultAvatar();
+
+  editProfile.type = "button";
+  editProfile.onclick = editorProfileEdit;
+
+  profileInfo.appendChild(profileName);
+  profileInfo.appendChild(profileEmail);
+  profileInfo.appendChild(editProfile);
+
+  profileBox.appendChild(avatar);
+  profileBox.appendChild(profileInfo);
+
+  /* Label menu */
+  var heading = el("div", "menu-heading", "MENU UTAMA");
+  var main = el("div", "editor-menu-main");
+
+  /* Menu Teks */
+  var t = el("button");
+  t.type = "button";
+
+  t.appendChild(
+    editorProfileIcon("M4 20h4L19 9l-4-4L4 16z")
+  );
+  t.appendChild(document.createTextNode("Teks"));
 
   t.onclick = function () {
     p.classList.remove("on");
@@ -251,55 +545,88 @@ function bar() {
     );
   };
 
-  s.onclick = function () {
-    p.classList.remove("on");
-    save();
-  };
-
+  /* Menu Foto */
   var fb = el("button");
-  var lb = el("button");
-  var gb = el("button");
-  var out = el("button");
+  fb.type = "button";
 
-  [fb, lb, gb, out].forEach(function (button) {
-    button.type = "button";
-  });
-
-  fb.innerHTML =
-    '<svg class="ic" viewBox="0 0 24 24">' +
-    '<rect x="4" y="5" width="16" height="14" rx="2"/>' +
-    '<circle cx="9" cy="10" r="1.5"/>' +
-    '<path d="M4 17l5-4 4 3 3-2 4 3"/>' +
-    "</svg> Foto";
-
-  lb.innerHTML =
-    '<svg class="ic" viewBox="0 0 24 24">' +
-    '<path d="M9 18V6l10-2v12"/>' +
-    '<circle cx="7" cy="18" r="2"/>' +
-    '<circle cx="17" cy="16" r="2"/>' +
-    "</svg> Lagu";
-
-  gb.innerHTML =
-    '<svg class="ic" viewBox="0 0 24 24">' +
-    '<path d="M12 4l2.4 5 5.4.6-4 3.7 1.1 5.4L12 16l-4.9 2.7 1.1-5.4-4-3.7 5.4-.6z"/>' +
-    "</svg> Wishlist";
+  fb.appendChild(
+    editorProfileIcon(
+      "M4 5h16v14H4z M4 16l5-5 4 4 3-3 4 4 M9 9h.01"
+    )
+  );
+  fb.appendChild(document.createTextNode("Foto"));
 
   fb.onclick = function () {
     p.classList.remove("on");
     photoManager();
   };
 
+  /* Menu Lagu */
+  var lb = el("button");
+  lb.type = "button";
+
+  lb.appendChild(
+    editorProfileIcon(
+      "M9 18V6l10-2v12 M7 20a2 2 0 1 0 0-4 2 2 0 0 0 0 4 M17 18a2 2 0 1 0 0-4 2 2 0 0 0 0 4"
+    )
+  );
+  lb.appendChild(document.createTextNode("Lagu"));
+
   lb.onclick = function () {
     p.classList.remove("on");
     songManager();
   };
+
+  /* Menu Wishlist */
+  var gb = el("button");
+  gb.type = "button";
+
+  gb.appendChild(
+    editorProfileIcon(
+      "M12 3l2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9z"
+    )
+  );
+  gb.appendChild(document.createTextNode("Wishlist"));
 
   gb.onclick = function () {
     p.classList.remove("on");
     dateManager();
   };
 
-  out.textContent = "Keluar";
+  /* Menu Simpan */
+  var s = el("button", "pri");
+  s.type = "button";
+  s.id = "save";
+  s.disabled = !dirty;
+
+  s.appendChild(
+    editorProfileIcon("M5 12.5l4.5 4.5L19 7.5")
+  );
+  s.appendChild(document.createTextNode("Simpan"));
+
+  s.onclick = function () {
+    p.classList.remove("on");
+    save();
+  };
+
+  main.appendChild(t);
+  main.appendChild(fb);
+  main.appendChild(lb);
+  main.appendChild(gb);
+  main.appendChild(s);
+
+  /* Keluar */
+  var spacer = el("div", "editor-menu-spacer");
+  var out = el("button", "editor-logout");
+
+  out.type = "button";
+
+  out.appendChild(
+    editorProfileIcon(
+      "M10 17l5-5-5-5 M15 12H3 M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"
+    )
+  );
+  out.appendChild(document.createTextNode("Keluar"));
 
   out.onclick = function () {
     p.classList.remove("on");
@@ -309,39 +636,11 @@ function bar() {
     }
   };
 
-  /* Informasi akun */
-  p.appendChild(el("b", null, "Mode edit"));
-
-  var email = "";
-
-  if (
-    typeof fbAuth !== "undefined" &&
-    fbAuth &&
-    fbAuth.currentUser
-  ) {
-    email = fbAuth.currentUser.email || "";
-  } else if (
-    typeof fbUser !== "undefined" &&
-    fbUser
-  ) {
-    email = fbUser.email || "";
-  }
-
-  var accountLabel = el(
-    "div",
-    "mlabel",
-    email ? "Akun: " + email : "Akun editor"
-  );
-
-  accountLabel.style.overflowWrap = "anywhere";
-  accountLabel.style.marginBottom = "12px";
-
-  p.appendChild(accountLabel);
-  p.appendChild(t);
-  p.appendChild(fb);
-  p.appendChild(lb);
-  p.appendChild(gb);
-  p.appendChild(s);
+  /* Urutan sidebar */
+  p.appendChild(profileBox);
+  p.appendChild(heading);
+  p.appendChild(main);
+  p.appendChild(spacer);
   p.appendChild(out);
 
   b.appendChild(h);
@@ -349,7 +648,10 @@ function bar() {
   u.appendChild(b);
 }
 
-/* Pengelola foto dan lagu */
+/* =====================================================
+   PENGELOLA FOTO DAN LAGU
+   ===================================================== */
+
 function manager(title, build) {
   var m = el("div", "modal");
   var f = el("div", "card");
@@ -492,6 +794,7 @@ function photoManager() {
 
     if (D.photos.length < 12) {
       var a = el("button", "mt add", "＋");
+
       a.type = "button";
       a.setAttribute("aria-label", "Tambah foto");
 
@@ -499,11 +802,15 @@ function photoManager() {
         pick(true, function (r) {
           r.forEach(function (x) {
             if (D.photos.length < 12) {
-              D.photos.push({ id: uid(), src: x });
+              D.photos.push({
+                id: uid(),
+                src: x
+              });
             }
           });
 
           chg();
+
           if (mgr) mgr.refresh();
         });
       };
@@ -542,6 +849,7 @@ function songManager() {
         sure(x, function () {
           D.songs.splice(i, 1);
           chg();
+
           if (mgr) mgr.refresh();
         });
       };
@@ -553,14 +861,19 @@ function songManager() {
     });
 
     if (!D.songs.length) {
-      l.appendChild(el("p", "mlabel", "Belum ada lagu."));
+      l.appendChild(
+        el("p", "mlabel", "Belum ada lagu.")
+      );
     }
 
     b.appendChild(l);
 
     var a = el("button", "pri", "＋ Tambah lagu");
+
     a.type = "button";
-    a.onclick = function () { songForm(); };
+    a.onclick = function () {
+      songForm();
+    };
 
     b.appendChild(a);
   });
@@ -569,7 +882,13 @@ function songManager() {
 /* Form wishlist */
 function dateForm(o) {
   var n = !o;
-  o = o || { id: uid(), e: "", t: "", d: "" };
+
+  o = o || {
+    id: uid(),
+    e: "",
+    t: "",
+    d: ""
+  };
 
   form(
     n ? "Tambah wishlist" : "Edit wishlist",
@@ -591,6 +910,7 @@ function dateForm(o) {
       if (n) D.dates.push(o);
 
       chg();
+
       if (mgr) mgr.refresh();
     }
   );
@@ -627,6 +947,7 @@ function dateManager() {
         sure(x, function () {
           D.dates.splice(i, 1);
           chg();
+
           if (mgr) mgr.refresh();
         });
       };
@@ -638,15 +959,21 @@ function dateManager() {
     });
 
     if (!D.dates.length) {
-      l.appendChild(el("p", "mlabel", "Belum ada wishlist."));
+      l.appendChild(
+        el("p", "mlabel", "Belum ada wishlist.")
+      );
     }
 
     b.appendChild(l);
 
     if (D.dates.length < 6) {
       var a = el("button", "pri", "＋ Tambah wishlist");
+
       a.type = "button";
-      a.onclick = function () { dateForm(); };
+      a.onclick = function () {
+        dateForm();
+      };
+
       b.appendChild(a);
     }
 
@@ -675,7 +1002,11 @@ async function save() {
 
   if (!saveData(D)) {
     if (saveButton) saveButton.disabled = false;
-    toast("Data terlalu besar. Hapus beberapa foto lalu coba lagi.");
+
+    toast(
+      "Data terlalu besar. Hapus beberapa foto lalu coba lagi."
+    );
+
     return;
   }
 
@@ -743,11 +1074,16 @@ function initAdmin() {
 
 /* Memperbarui mode admin setelah autentikasi berubah */
 function refreshAdminAfterAuth(user) {
-  if (!user || !user.emailVerified || !isAllowedEditor(user)) {
+  if (
+    !user ||
+    !user.emailVerified ||
+    !isAllowedEditor(user)
+  ) {
     admin = false;
     document.body.classList.remove("adm");
 
     var u = document.querySelector("#adminUI");
+
     if (u) {
       u.querySelectorAll(".menu2").forEach(function (x) {
         x.remove();

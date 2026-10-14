@@ -1,47 +1,242 @@
-/* Mode edit: menu ☰, form, tombol tambah/hapus */
-.pol,.frame{cursor:default}
-.x,.mini{border:0;background:#ff3b6b;color:#fff;border-radius:999px;cursor:pointer;font:700 .9rem sans-serif}
-.x{position:absolute;top:-8px;right:-8px;width:26px;height:26px}
-.mini{width:42px;border-radius:12px;background:rgba(0,0,0,.45)}
-.song{display:flex;gap:8px;align-items:stretch}
-.song a{flex:1}
-.adm-only{display:none;background:var(--green);color:#4a0a5e;border:2px solid #c0149a;border-radius:999px;padding:8px 18px;font:700 1rem "Cormorant Garamond",serif;cursor:pointer}
-body.adm .adm-only{display:inline-block}
-.menu2{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);left:14px;z-index:9}
-.burger{position:relative;width:42px;height:38px;border-radius:10px;border:1px solid #fff6;background:linear-gradient(135deg,#7a1590,#4a0a5e);color:#fff;font-size:1.3rem;cursor:pointer}
-.burger.dirty::after{content:"";position:absolute;top:-4px;right:-4px;width:12px;height:12px;border-radius:50%;background:var(--green);border:2px solid #1a0020}
-.panel{display:none;margin-top:8px;background:#2a0535;border:1px solid #fff4;border-radius:12px;padding:8px;gap:6px;flex-direction:column;min-width:150px}
-.panel.on{display:flex}
-.panel b{font-weight:600;font-size:1rem;opacity:.8;padding:2px 4px}
-.panel button,.card button{font:600 1rem "Cormorant Garamond",serif;padding:8px 14px;border-radius:10px;border:1px solid #fff5;background:#2a0a2a;color:#fff;cursor:pointer}
-.pri{background:var(--green)!important;color:#4a0a5e!important}
-.panel button:disabled{opacity:.4}
-.modal{position:fixed;inset:0;z-index:20;background:rgba(0,0,0,.7);display:grid;place-items:center;padding:16px}
-.card{background:#220522;border:1px solid #fff4;border-radius:16px;padding:18px;width:min(92vw,420px);max-height:90vh;overflow:auto;display:grid;gap:10px;text-align:left}
-.card h3{margin:0;font-size:2rem;text-align:center}
-.card label{display:grid;gap:4px;font-size:1.05rem}
-.card input,.card textarea{font:1rem Georgia,serif;padding:8px;border-radius:8px;border:1px solid #fff5;background:#120012;color:#fff}
-.row{display:flex;gap:8px;justify-content:flex-end}
-#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#000c;padding:8px 14px;border-radius:10px;opacity:0;transition:opacity .3s;z-index:30;pointer-events:none}
-.panel{min-width:176px;padding:10px;gap:8px}
-.panel b{padding:0 4px 8px;border-bottom:1px solid #fff3}
-.panel button{width:100%;text-align:left;padding:10px 12px;display:flex;align-items:center;gap:8px}
-.card button{min-width:92px;padding:10px 14px}
-.card .row{margin-top:6px}
-.card input,.card textarea{width:100%}
-.adm-only{margin-top:6px}
-.x{width:30px;height:30px;border:2px solid #fff;font-size:.85rem;display:grid;place-items:center}
-.song a{padding:12px 14px}
-.song .mini{width:46px;display:grid;place-items:center;font-size:1rem}
-.ic{width:16px;height:16px;fill:none;stroke:#8c8c8c;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px}
-.mbody{display:grid;gap:10px;overflow-y:auto;max-height:calc(90vh - 150px);align-content:start}
-.mlabel{margin:6px 0 0;font-size:1.05rem;opacity:.85}
-.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.mt{position:relative;aspect-ratio:3/4;border-radius:8px;background:#f3d6ec center/cover;overflow:hidden;border:1px solid #fff4}
-.mt .tb{position:absolute;left:0;right:0;bottom:0;display:flex;gap:4px;padding:18px 4px 4px;background:linear-gradient(transparent,rgba(0,0,0,.75))}
-.card .tb button{flex:1;min-width:0;padding:5px 0;font-size:.9rem;border-radius:8px}
-.mt.add{display:grid;place-items:center;border:2px dashed #ff7fdc;background:transparent;color:#ffd1ec;font-size:2rem;cursor:pointer;padding:0;min-width:0}
-.mlist{display:grid;gap:8px}
-.mrow{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.3);border:1px solid #fff3;border-radius:10px;padding:8px 10px}
-.mrow span{flex:1;min-width:0;text-align:left;font-size:1.1rem;overflow-wrap:anywhere}.mrow small{opacity:.8}
-.card .mrow button{min-width:0;padding:6px 12px}
+
+/* ===== SIDEBAR EDITOR BARU ===== */
+
+.menu2 {
+  z-index: 15;
+}
+
+.burger {
+  width: 44px;
+  height: 42px;
+  border-radius: 12px;
+  box-shadow: 0 5px 16px #0005;
+  transition: filter .2s, transform .2s;
+}
+
+.burger:hover {
+  filter: brightness(1.15);
+}
+
+.burger:active {
+  transform: scale(.96);
+}
+
+.panel {
+  width: min(310px, calc(100vw - 28px));
+  min-width: 0;
+  max-height: calc(100dvh - 90px);
+  overflow-y: auto;
+  margin-top: 10px;
+  padding: 12px;
+  gap: 6px;
+  background: #2a0535;
+  border: 1px solid #ffffff24;
+  border-radius: 16px;
+  box-shadow: 0 16px 40px #0008;
+  overscroll-behavior: contain;
+}
+
+.panel.on {
+  display: flex;
+}
+
+/* Profil */
+.editor-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 4px 15px;
+  margin-bottom: 5px;
+  border-bottom: 1px solid #ffffff25;
+}
+
+.editor-avatar {
+  width: 58px;
+  height: 58px;
+  flex: 0 0 58px;
+  display: block;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #ff7fdc;
+  background: #4a0a5e;
+  box-shadow: 0 0 12px #c0149a40;
+}
+
+.editor-profile-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.editor-profile-name {
+  color: #fff;
+  font: 700 1.2rem/1.25 "Cormorant Garamond", serif;
+  overflow-wrap: anywhere;
+}
+
+.editor-profile-email {
+  margin-top: 4px;
+  color: #ffffffa8;
+  font: .78rem/1.45 sans-serif;
+  overflow-wrap: anywhere;
+}
+
+.panel button.editor-profile-edit {
+  display: inline-flex;
+  width: auto;
+  min-height: 0;
+  margin-top: 7px;
+  padding: 2px 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #ff7fdc;
+  font: 600 .95rem "Cormorant Garamond", serif;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.panel button.editor-profile-edit:hover {
+  background: transparent;
+  color: #ffd1ec;
+}
+
+/* Label menu */
+.menu-heading {
+  padding: 9px 8px 5px;
+  color: #ffd1ec;
+  font: 600 .78rem sans-serif;
+  letter-spacing: .09em;
+}
+
+/* Kelompok menu utama */
+.editor-menu-main {
+  display: grid;
+  gap: 5px;
+}
+
+.panel .editor-menu-main button,
+.panel button.editor-logout {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  min-height: 43px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: #fff;
+  text-align: left;
+  font: 600 1rem "Cormorant Garamond", serif;
+  transition: background .18s, border-color .18s;
+}
+
+.panel .editor-menu-main button:hover {
+  background: #4a0a5e;
+  border-color: #ffffff20;
+}
+
+/* Ikon SVG */
+.editor-menu-main .ic,
+.editor-logout .ic {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  stroke: currentColor;
+  color: #ffb8e5;
+}
+
+/* Tombol simpan */
+.panel .editor-menu-main button.pri {
+  margin-top: 5px;
+  background: var(--green) !important;
+  color: #4a0a5e !important;
+}
+
+.panel .editor-menu-main button.pri .ic {
+  color: #4a0a5e;
+}
+
+/* Jarak fleksibel sebelum tombol keluar */
+.editor-menu-spacer {
+  flex: 1 0 12px;
+  min-height: 12px;
+}
+
+/* Keluar di bagian bawah */
+.panel button.editor-logout {
+  flex-shrink: 0;
+  margin-top: 5px;
+  padding-top: 13px;
+  border-top: 1px solid #ffffff25;
+  border-radius: 0 0 10px 10px;
+  color: #ff7fdc;
+}
+
+.panel button.editor-logout .ic {
+  color: #ff7fdc;
+}
+
+.panel button.editor-logout:hover {
+  background: #4a0a5e;
+}
+
+/* Modal edit profil */
+.profile-modal-card {
+  width: min(92vw, 390px);
+}
+
+.profile-preview-wrap {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 8px 0 14px;
+}
+
+.profile-preview {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #ff7fdc;
+  background: #4a0a5e;
+  box-shadow: 0 0 18px #c0149a45;
+}
+
+.profile-photo-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  width: fit-content;
+}
+
+.profile-help {
+  color: #ffffffa8;
+  font: .82rem/1.5 sans-serif;
+  text-align: center;
+}
+
+/* Fokus aksesibilitas */
+.panel button:focus-visible,
+.burger:focus-visible {
+  outline: 2px solid #ff7fdc;
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .panel {
+    width: min(290px, calc(100vw - 28px));
+    padding: 10px;
+  }
+
+  .editor-avatar {
+    width: 54px;
+    height: 54px;
+    flex-basis: 54px;
+  }
+
+  .editor-profile-name {
+    font-size: 1.1rem;
+  }
+}
