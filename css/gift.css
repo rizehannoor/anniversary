@@ -1,0 +1,6 @@
+/* Halaman Gift (hadiah dan kupon) */
+.gift{background:none;border:0;font-size:7rem;cursor:pointer;filter:drop-shadow(0 0 22px rgba(255,150,220,.8))}
+.gift.shake{animation:shake .5s 2}
+@keyframes shake{25%{transform:rotate(-10deg)}75%{transform:rotate(10deg)}}
+.coupon{display:none;background:var(--paper);color:#3a1a2a;border:3px dashed #b0368f;border-radius:10px;padding:20px 24px;max-width:340px;font-size:1.3rem;font-weight:600;transform:rotate(-1.5deg)}
+.coupon.on{display:block;animation:in .6s ease}

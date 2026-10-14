@@ -1,0 +1,21 @@
+/* Dasar: warna, font, reset, layar, tombol BACK, hati melayang */
+:root{--ink:#14000f;--plum:#5b0a63;--mag:#ff1fc4;--paper:#f3ead9;--cream:#fff6ec;--green:#ffd1ec;--gold:#e8b4a0;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html,body{height:100%;margin:0}
+body{background:linear-gradient(100deg,#0d0008 0%,#5b0a63 35%,#c0149a 70%,#ff1fc4 100%);color:var(--cream);font-family:"Cormorant Garamond",Georgia,serif;overflow:hidden;-webkit-tap-highlight-color:transparent}
+.script{font-family:"Pinyon Script","Snell Roundhand",cursive;font-weight:400}
+.screen{position:absolute;inset:0;padding:env(safe-area-inset-top,0px) 18px 24px;display:none;flex-direction:column;align-items:center;justify-content:center;gap:18px;overflow-y:auto;text-align:center}
+.screen.on{display:flex;animation:in .5s ease}
+@keyframes in{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+h1,h2{margin:0;font-size:clamp(2.2rem,9vw,3.6rem);line-height:1.1;text-shadow:0 2px 18px rgba(0,0,0,.35)}
+.back{position:fixed;top:calc(env(safe-area-inset-top,0px) + 14px);right:14px;background:var(--green);color:#4a0a5e;border:2px solid #c0149a;border-radius:999px;padding:6px 16px;font:700 .9rem "Cormorant Garamond",serif;letter-spacing:.12em;box-shadow:0 3px 0 #c0149a;cursor:pointer;z-index:5}
+.back:active{transform:translateY(2px);box-shadow:0 1px 0 #c0149a}
+.hint{font-size:1.15rem;opacity:.85}
+:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.screen{justify-content:safe center}
+.heart{position:fixed;bottom:-30px;pointer-events:none;opacity:.7;animation:up linear forwards;z-index:0}
+@keyframes up{to{transform:translateY(-110vh) rotate(25deg);opacity:0}}
+.screen{z-index:1}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}

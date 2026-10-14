@@ -1,0 +1,19 @@
+/* Halaman Playlist (pemutar YouTube dan daftar lagu) */
+.songs{list-style:none;margin:0;padding:0;width:min(92vw,420px);display:grid;gap:10px}
+.songs a{display:flex;justify-content:space-between;gap:12px;align-items:center;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.25);border-radius:14px;padding:12px 16px;color:inherit;text-decoration:none;text-align:left;font-size:1.2rem}
+.songs a:hover{background:rgba(0,0,0,.55)}
+.songs small{opacity:.8;font-size:1rem}
+.disc{font-size:4rem;animation:spin 5s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pl{width:min(92vw,420px);display:grid;gap:10px}
+.pl .vid{display:grid;place-items:center;aspect-ratio:16/9;width:100%;border:0;border-radius:14px;box-shadow:0 12px 28px rgba(0,0,0,.5);background:#000}
+.pl .novid{background:rgba(0,0,0,.4);font-size:1.15rem;padding:12px}
+.nowbox{display:flex;align-items:center;gap:10px;justify-content:space-between;text-align:left}
+.nowbox b{font-size:1.5rem;font-weight:600;display:block;line-height:1.2}
+.nowbox small{opacity:.85;font-size:1.05rem}
+.ctl{display:flex;gap:8px}
+.ctl button{width:42px;height:42px;border-radius:50%;border:1px solid #fff5;background:rgba(0,0,0,.4);color:#fff;font-size:1.5rem;line-height:1;cursor:pointer}
+.pl .yt{font-size:1rem;opacity:.85;color:inherit;text-align:left}
+.songs .sg{flex:1;display:flex;justify-content:flex-start;gap:12px;align-items:center;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.25);border-radius:14px;padding:10px 14px;color:inherit;text-decoration:none;text-align:left;font:inherit;font-size:1.2rem;cursor:pointer}
+.sg em{font-style:normal;width:22px;text-align:center;color:#ffb6e6}
+.songs .sg.now{background:rgba(255,31,196,.28);border-color:#ff7fdc}

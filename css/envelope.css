@@ -1,0 +1,16 @@
+/* Amplop pembuka dan segel */
+@keyframes float{50%{transform:translateY(-8px)}}
+.env{position:relative;display:block;width:min(80vw,340px);aspect-ratio:1.6;border:0;padding:0;background:none;cursor:pointer;filter:drop-shadow(0 20px 22px rgba(0,0,0,.5));animation:float 3s ease-in-out infinite;perspective:900px}
+.env>*{position:absolute;display:block}
+.eback{inset:0;background:linear-gradient(160deg,#c0149a,#6b0c7a);border-radius:3px}
+.ecard{left:7%;right:7%;top:8%;bottom:6%;background:linear-gradient(#fffaf0,#f3e8d2);border-radius:3px;display:grid;place-items:center;transition:transform .9s .35s cubic-bezier(.3,.8,.3,1);z-index:2;box-shadow:0 2px 6px rgba(0,0,0,.25);color:#a0126f;font:400 1.7rem "Pinyon Script",cursive;text-align:center}
+.efront{inset:0;width:100%;height:100%;z-index:3;border-radius:3px}
+.flap{left:0;right:0;top:0;height:59%;transform-origin:50% 0;transform-style:preserve-3d;transition:transform .8s ease;z-index:4}
+.ff,.fb{inset:0;clip-path:polygon(0 0,100% 0,50% 100%);backface-visibility:hidden}
+.ff{background:linear-gradient(180deg,#f8f0df 0%,#efe3cb 60%,#dccdae 100%)}
+.fb{background:linear-gradient(0deg,#d11fa8,#8a0fa8);transform:rotateX(180deg)}
+.seal{left:50%;top:59%;width:19%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;z-index:5;background:radial-gradient(circle at 35% 30%,#f07bff,#9c12b8 50%,#47005c);box-shadow:0 4px 10px rgba(0,0,0,.55),inset 0 0 0 5px rgba(255,255,255,.12),inset 0 -4px 6px rgba(0,0,0,.3);display:grid;place-items:center;color:rgba(255,230,250,.85);font:1.3rem/1 sans-serif;transition:opacity .35s,transform .5s}
+.env.open{animation:none}
+.env.open .flap{transform:rotateX(180deg);z-index:1}
+.env.open .seal{opacity:0;transform:translate(-50%,-50%) scale(1.4) rotate(20deg)}
+.env.open .ecard{transform:translateY(-58%)}

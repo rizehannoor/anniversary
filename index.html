@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Happy Anniversary 💌</title>
+<link rel="icon" href="assets/icons/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pinyon+Script&family=Caveat:wght@600&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/envelope.css">
+<link rel="stylesheet" href="css/menu.css">
+<link rel="stylesheet" href="css/journey.css">
+<link rel="stylesheet" href="css/moment.css">
+<link rel="stylesheet" href="css/playlist.css">
+<link rel="stylesheet" href="css/gift.css">
+<link rel="stylesheet" href="css/admin.css">
+<link rel="stylesheet" href="css/responsive.css">
+</head>
+<body>
+
+<!-- 1. Amplop -->
+<section class="screen on" id="s-env">
+  <h1 class="script">Press the Envelope</h1>
+  <button class="env" id="env" aria-label="Buka amplop"><span class="eback"></span><span class="ecard">Happy Anniversary</span><svg class="efront" viewBox="0 0 320 200" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="gl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6eddc"/><stop offset="1" stop-color="#e6d8bd"/></linearGradient><linearGradient id="gr" x1="1" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6eddc"/><stop offset="1" stop-color="#e6d8bd"/></linearGradient><linearGradient id="gb" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#e0d1b3"/><stop offset="1" stop-color="#f2e8d3"/></linearGradient></defs><polygon points="0,0 164,106 0,200" fill="url(#gl)"/><polygon points="320,0 156,106 320,200" fill="url(#gr)"/><polygon points="0,200 160,88 320,200" fill="url(#gb)"/><path d="M0 0L164 106L0 200M320 0L156 106L320 200M0 200L160 88L320 200" fill="none" stroke="rgba(110,70,40,.2)" stroke-width="1"/></svg><span class="flap"><span class="ff"></span><span class="fb"></span></span><span class="seal">♥</span></button>
+  <p class="script hint" style="font-size:1.6rem">tap untuk lanjut</p>
+</section>
+
+<!-- 2. Menu -->
+<section class="screen" id="s-menu">
+  <h2 class="script">Choose the Surprise</h2>
+  <div class="menu">
+    <button class="pick" data-go="s-journey"><i>📷</i><span class="script">Journey</span></button>
+    <button class="pick" data-go="s-moment"><i>⏱️</i><span class="script">Moment</span></button>
+    <button class="pick" data-go="s-playlist"><i>💿</i><span class="script">Playlist</span></button>
+    <button class="pick" data-go="s-gift"><i>🎁</i><span class="script">Gift</span></button>
+  </div>
+</section>
+
+<!-- 3. Journey -->
+<section class="screen" id="s-journey">
+  <button class="back" data-go="s-menu">BACK</button>
+  <h2 class="script">Our Journey</h2>
+  <p class="hint">Perjalanan kita sejak hari jadian</p>
+  <div class="wall" id="wall"></div>
+  <button class="adm-only" id="addPhoto">＋ Tambah foto</button>
+</section>
+
+<!-- 4. Moment -->
+<section class="screen" id="s-moment">
+  <button class="back" data-go="s-menu">BACK</button>
+  <h2 class="script" id="herName"></h2>
+  <div class="letter">
+    <div class="paper" id="letter"></div>
+    <div class="frame" id="frame">🌹</div>
+  </div>
+  <div class="timer" id="timer"></div>
+  <p class="hint" id="sinceTxt"></p>
+</section>
+
+<!-- 5. Playlist -->
+<section class="screen" id="s-playlist">
+  <button class="back" data-go="s-menu">BACK</button>
+  <h2 class="script">Our Playlist</h2>
+  <div class="pl" id="pl"></div>
+  <ul class="songs" id="songs"></ul>
+  <button class="adm-only" id="addSong">＋ Tambah lagu</button>
+</section>
+
+<!-- 6. Gift -->
+<section class="screen" id="s-gift">
+  <button class="back" data-go="s-menu">BACK</button>
+  <h2 class="script">A Little Gift</h2>
+  <button class="gift" id="gift" aria-label="Buka hadiah">🎁</button>
+  <div class="coupon" id="coupon"></div>
+  <p class="hint" id="giftHint">ketuk hadiahnya</p>
+</section>
+
+<div id="adminUI"></div><div id="toast"></div>
+
+<script src="data/content.js"></script>
+<script src="js/config.js"></script>
+<script src="js/utils.js"></script>
+<script src="js/store.js"></script>
+<script src="js/envelope.js"></script>
+<script src="js/admin.js"></script>
+<script src="js/journey.js"></script>
+<script src="js/moment.js"></script>
+<script src="js/playlist.js"></script>
+<script src="js/gift.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,15 @@
+/* Halaman Moment (surat, perangko, hitungan waktu) */
+.letter{position:relative;display:flex;flex-wrap:wrap;gap:20px;justify-content:center;align-items:center;max-width:720px}
+.paper{position:relative;width:min(88vw,380px);margin-bottom:18px;background:repeating-linear-gradient(transparent 0 29px,rgba(176,54,143,.2) 29px 30px),linear-gradient(#f9f1e2,#efe2cb);color:#3a1a2a;padding:34px 24px 34px 34px;text-align:left;transform:rotate(-1.5deg);box-shadow:0 14px 30px rgba(0,0,0,.5);font:600 1.3rem/30px "Caveat","Cormorant Garamond",cursive;border-radius:3px;border-left:3px double rgba(200,40,100,.4)}
+.paper::before{content:"";position:absolute;top:-12px;left:50%;width:92px;height:26px;transform:translateX(-50%) rotate(-3deg);background:rgba(255,170,220,.65);box-shadow:0 1px 3px rgba(0,0,0,.25)}
+.paper .to{font:400 2.2rem/1.2 "Pinyon Script",cursive;color:#a0126f;padding-right:56px;margin-bottom:4px}
+.paper .from{text-align:right;font:400 2rem/1.2 "Pinyon Script",cursive;color:#a0126f;margin-top:12px}
+.paper .stamp{position:absolute;top:16px;right:16px;width:44px;height:54px;background:#ffd1ec;border:2px dashed #c0149a;display:grid;place-items:center;color:#c0149a;font:1.3rem/1 sans-serif;transform:rotate(4deg)}
+.paper .wax{position:absolute;left:18px;bottom:-18px;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#f07bff,#8a0fa8 55%,#3b0050);box-shadow:0 3px 6px rgba(0,0,0,.5);display:grid;place-items:center;color:#ffd1ec;font:1.1rem/1 sans-serif}
+.frame{width:190px;aspect-ratio:3/4;border:10px solid var(--gold);outline:3px solid #a8625a;background:#f3d6ec center/cover;display:grid;place-items:center;color:#b0368f;font-size:2rem;cursor:pointer;transform:rotate(3deg);box-shadow:0 12px 28px rgba(0,0,0,.45)}
+.frame input{display:none}
+.timer{display:flex;gap:12px}
+.timer b{display:block;font-size:2rem;font-weight:600}
+.timer small{font-size:1rem;opacity:.85}
+.timer div{min-width:62px;background:rgba(0,0,0,.28);border-radius:12px;padding:8px 6px}
+.paper .stamp{white-space:pre-line;text-align:center;font:700 1rem/1.25 "Cormorant Garamond",serif}

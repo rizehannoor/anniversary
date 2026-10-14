@@ -1,0 +1,5 @@
+/* Halaman Journey (polaroid) */
+.wall{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 10px;width:min(96vw,640px)}
+.pol{background:#fff;padding:7px 7px 26px;box-shadow:0 8px 18px rgba(0,0,0,.4);transform:rotate(var(--r));cursor:pointer;position:relative}
+.pol div{aspect-ratio:3/4;background:#f3d6ec center/cover;display:grid;place-items:center;color:#b0368f;font-size:1.8rem}
+.pol input{display:none}

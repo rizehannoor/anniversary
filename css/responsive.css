@@ -1,0 +1,4 @@
+/* Aturan untuk layar kecil (HP) */
+@media(max-width:520px){.wall{grid-template-columns:repeat(2,1fr)}}
+/* Cegah geser ke samping di HP (polaroid miring bisa sedikit keluar layar) */
+.screen{overflow-x:hidden}
