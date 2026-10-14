@@ -184,7 +184,7 @@ async function logoutAdmin() {
   }
 }
 
-/* Membuat menu edit */
+/* Membuat menu edit tanpa tombol Terbitkan */
 function bar() {
   var u = document.querySelector("#adminUI");
 
@@ -259,10 +259,9 @@ function bar() {
   var fb = el("button");
   var lb = el("button");
   var gb = el("button");
-  var ub = el("button");
   var out = el("button");
 
-  [fb, lb, gb, ub, out].forEach(function (button) {
+  [fb, lb, gb, out].forEach(function (button) {
     button.type = "button";
   });
 
@@ -285,11 +284,6 @@ function bar() {
     '<path d="M12 4l2.4 5 5.4.6-4 3.7 1.1 5.4L12 16l-4.9 2.7 1.1-5.4-4-3.7 5.4-.6z"/>' +
     "</svg> Wishlist";
 
-  ub.innerHTML =
-    '<svg class="ic" viewBox="0 0 24 24">' +
-    '<path d="M12 16V5M7 9l5-5 5 5M5 19h14"/>' +
-    "</svg> Terbitkan";
-
   fb.onclick = function () {
     p.classList.remove("on");
     photoManager();
@@ -303,16 +297,6 @@ function bar() {
   gb.onclick = function () {
     p.classList.remove("on");
     dateManager();
-  };
-
-  ub.onclick = function () {
-    p.classList.remove("on");
-
-    if (typeof publish === "function") {
-      publish();
-    } else {
-      toast("Fitur Terbitkan tidak tersedia.");
-    }
   };
 
   out.textContent = "Keluar";
@@ -358,7 +342,6 @@ function bar() {
   p.appendChild(lb);
   p.appendChild(gb);
   p.appendChild(s);
-  p.appendChild(ub);
   p.appendChild(out);
 
   b.appendChild(h);
@@ -739,11 +722,6 @@ function initAdmin() {
   var wantsEdit = q.has(ADMIN_PARAM);
   var localEdit = isLocal() && !q.has(VIEW_PARAM);
 
-  /*
-   * Di website publik, mode edit hanya aktif jika:
-   * 1. URL memiliki ?edit
-   * 2. Akun Firebase terverifikasi dan diizinkan
-   */
   if (!wantsEdit && !localEdit) {
     admin = false;
     document.body.classList.remove("adm");
@@ -763,7 +741,7 @@ function initAdmin() {
   render();
 }
 
-/* Dipanggil setelah status autentikasi Firebase berubah */
+/* Memperbarui mode admin setelah autentikasi berubah */
 function refreshAdminAfterAuth(user) {
   if (!user || !user.emailVerified || !isAllowedEditor(user)) {
     admin = false;
