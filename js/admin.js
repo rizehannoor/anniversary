@@ -229,7 +229,6 @@ function editorProfileDefaultAvatar() {
     '<rect width="128" height="128" rx="64" fill="url(#bg)"/>' +
     '<circle cx="64" cy="46" r="25" fill="#f7d9ff"/>' +
     '<path d="M18 124c3-29 20-44 46-44s43 15 46 44" fill="#f7d9ff"/>' +
-    '<path d="M40 44c0-17 10-28 25-28 14 0 25 11 25 27-7-3-14-10-18-17-7 10-18 16-32 18z" fill="#4a0a5e"/>' +
     '</svg>';
 
   return "data:image/svg+xml;charset=UTF-8," +
@@ -318,6 +317,12 @@ function editorProfileEdit() {
   var previewWrap = el("div", "profile-preview-wrap");
   var preview = el("img", "profile-preview");
   var photoButton = el("button", "profile-photo-button");
+  var removeButton = el(
+    "button",
+    "profile-photo-remove",
+    "Hapus foto"
+  );
+  var photoActions = el("div", "profile-photo-actions");
 
   var help = el(
     "p",
@@ -339,6 +344,15 @@ function editorProfileEdit() {
   preview.src = draftPhoto || defaultAvatar;
 
   photoButton.type = "button";
+  removeButton.type = "button";
+
+  /* Tombol hapus hanya aktif kalau ada foto buatan sendiri */
+  function syncPhotoState() {
+    removeButton.disabled = !draftPhoto;
+  }
+
+  syncPhotoState();
+
   photoButton.appendChild(
     editorProfileIcon(
       "M4 7h3l2-3h6l2 3h3v12H4z"
@@ -384,6 +398,7 @@ function editorProfileEdit() {
         .then(function (data) {
           draftPhoto = data;
           preview.src = data;
+          syncPhotoState();
         })
         .catch(function (e) {
           console.error(e);
@@ -392,6 +407,13 @@ function editorProfileEdit() {
     };
 
     input.click();
+  };
+
+  /* Kembali ke foto bawaan */
+  removeButton.onclick = function () {
+    draftPhoto = "";
+    preview.src = defaultAvatar;
+    syncPhotoState();
   };
 
   cancel.onclick = function () {
@@ -424,7 +446,9 @@ function editorProfileEdit() {
   row.appendChild(saveProfile);
 
   previewWrap.appendChild(preview);
-  previewWrap.appendChild(photoButton);
+  photoActions.appendChild(photoButton);
+  photoActions.appendChild(removeButton);
+  previewWrap.appendChild(photoActions);
 
   card.appendChild(title);
   card.appendChild(previewWrap);

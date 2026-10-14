@@ -1,242 +1,792 @@
+/* ===== SIDEBAR EDITOR: FIXED & RESPONSIVE ===== */
 
-/* ===== SIDEBAR EDITOR BARU ===== */
+/* Container hamburger */
+#adminUI .menu2 {
+  position: fixed !important;
+  top: 16px !important;
+  left: 16px !important;
+  right: auto !important;
+  bottom: auto !important;
 
-.menu2 {
-  z-index: 15;
-}
-
-.burger {
   width: 44px;
   height: 42px;
+  margin: 0;
+  padding: 0;
+
+  z-index: 99999 !important;
+  transform: none !important;
+  pointer-events: none;
+}
+
+/* Tombol hamburger */
+#adminUI .menu2 .burger {
+  position: absolute !important;
+  top: 0;
+  left: 0;
+  right: auto;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  box-sizing: border-box;
+  width: 44px;
+  height: 42px;
+  min-width: 44px;
+  min-height: 42px;
+  margin: 0;
+  padding: 0;
+
+  z-index: 2;
+  pointer-events: auto;
+  cursor: pointer;
+  touch-action: manipulation;
+
+  border: 1px solid #fff6;
   border-radius: 12px;
+  background: linear-gradient(135deg, #7a1590, #4a0a5e);
+  color: #fff;
+  font-size: 1.3rem;
+  line-height: 1;
   box-shadow: 0 5px 16px #0005;
   transition: filter .2s, transform .2s;
 }
 
-.burger:hover {
+#adminUI .menu2 .burger:hover {
   filter: brightness(1.15);
 }
 
-.burger:active {
+#adminUI .menu2 .burger:active {
   transform: scale(.96);
 }
 
-.panel {
-  width: min(310px, calc(100vw - 28px));
-  min-width: 0;
-  max-height: calc(100dvh - 90px);
-  overflow-y: auto;
-  margin-top: 10px;
-  padding: 12px;
+/* Panel menu */
+#adminUI .menu2 .panel {
+  position: absolute !important;
+  top: 52px !important;
+  left: 0 !important;
+  right: auto !important;
+  bottom: auto !important;
+
+  display: none;
+  flex-direction: column;
+  align-items: stretch;
   gap: 6px;
+
+  box-sizing: border-box;
+  width: min(310px, calc(100vw - 32px));
+  min-width: 0;
+  max-width: calc(100vw - 32px);
+
+  max-height: calc(100vh - 84px);
+  max-height: calc(100dvh - 84px);
+
+  margin: 0;
+  padding: 12px;
+
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+
   background: #2a0535;
   border: 1px solid #ffffff24;
   border-radius: 16px;
   box-shadow: 0 16px 40px #0008;
-  overscroll-behavior: contain;
+
+  z-index: 3;
+  pointer-events: auto;
+  isolation: isolate;
 }
 
-.panel.on {
-  display: flex;
+/* Panel tertutup */
+#adminUI .menu2 .panel:not(.on) {
+  display: none !important;
+  visibility: hidden;
+  pointer-events: none !important;
 }
 
-/* Profil */
-.editor-profile {
+/* Panel terbuka */
+#adminUI .menu2 .panel.on {
+  display: flex !important;
+  visibility: visible;
+  pointer-events: auto !important;
+}
+
+/* Isi panel */
+#adminUI .menu2 .panel > * {
+  box-sizing: border-box;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Profil editor */
+#adminUI .editor-profile {
   display: flex;
   align-items: center;
   gap: 12px;
+
   padding: 6px 4px 15px;
   margin-bottom: 5px;
+
   border-bottom: 1px solid #ffffff25;
 }
 
-.editor-avatar {
+#adminUI .editor-avatar {
+  display: block;
+  flex: 0 0 58px;
+
   width: 58px;
   height: 58px;
-  flex: 0 0 58px;
-  display: block;
+
   object-fit: cover;
   border-radius: 50%;
   border: 2px solid #ff7fdc;
+
   background: #4a0a5e;
   box-shadow: 0 0 12px #c0149a40;
 }
 
-.editor-profile-info {
+#adminUI .editor-profile-info {
   flex: 1;
   min-width: 0;
 }
 
-.editor-profile-name {
+#adminUI .editor-profile-name {
   color: #fff;
   font: 700 1.2rem/1.25 "Cormorant Garamond", serif;
   overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
-.editor-profile-email {
+#adminUI .editor-profile-email {
   margin-top: 4px;
   color: #ffffffa8;
   font: .78rem/1.45 sans-serif;
   overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
-.panel button.editor-profile-edit {
+/* Tombol edit profil */
+#adminUI .panel button.editor-profile-edit {
   display: inline-flex;
+  align-items: center;
+
   width: auto;
+  min-width: 0;
   min-height: 0;
+
   margin-top: 7px;
   padding: 2px 0;
+
   border: 0;
   border-radius: 0;
   background: transparent;
+
   color: #ff7fdc;
   font: 600 .95rem "Cormorant Garamond", serif;
   text-decoration: underline;
   text-underline-offset: 4px;
+
+  cursor: pointer;
+  pointer-events: auto;
 }
 
-.panel button.editor-profile-edit:hover {
+#adminUI .panel button.editor-profile-edit:hover {
   background: transparent;
   color: #ffd1ec;
 }
 
-/* Label menu */
-.menu-heading {
+/* Judul menu */
+#adminUI .menu-heading {
   padding: 9px 8px 5px;
+
   color: #ffd1ec;
   font: 600 .78rem sans-serif;
   letter-spacing: .09em;
 }
 
-/* Kelompok menu utama */
-.editor-menu-main {
+/* Daftar menu utama */
+#adminUI .editor-menu-main {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 5px;
+
+  width: 100%;
+  min-width: 0;
 }
 
-.panel .editor-menu-main button,
-.panel button.editor-logout {
+/* Tombol menu utama dan logout */
+#adminUI .panel .editor-menu-main button,
+#adminUI .panel button.editor-logout {
   display: flex;
   align-items: center;
   gap: 11px;
+
+  box-sizing: border-box;
   width: 100%;
+  min-width: 0;
   min-height: 43px;
+  flex-shrink: 0;
+
+  margin: 0;
   padding: 10px 12px;
+
   border: 1px solid transparent;
   border-radius: 10px;
+
   background: transparent;
   color: #fff;
+
   text-align: left;
   font: 600 1rem "Cormorant Garamond", serif;
+
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+
   transition: background .18s, border-color .18s;
 }
 
-.panel .editor-menu-main button:hover {
+/* Hover tombol menu */
+#adminUI .panel .editor-menu-main button:hover {
   background: #4a0a5e;
   border-color: #ffffff20;
 }
 
-/* Ikon SVG */
-.editor-menu-main .ic,
-.editor-logout .ic {
+/* Ikon menu */
+#adminUI .editor-menu-main .ic,
+#adminUI .editor-logout .ic {
+  display: block;
+  flex: 0 0 18px;
+
   width: 18px;
   height: 18px;
-  flex: 0 0 18px;
+
   stroke: currentColor;
   color: #ffb8e5;
+
+  pointer-events: none;
+}
+
+/* Teks tombol */
+#adminUI .editor-menu-main button span,
+#adminUI .editor-logout span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 /* Tombol simpan */
-.panel .editor-menu-main button.pri {
+#adminUI .panel .editor-menu-main button.pri {
   margin-top: 5px;
   background: var(--green) !important;
   color: #4a0a5e !important;
 }
 
-.panel .editor-menu-main button.pri .ic {
+#adminUI .panel .editor-menu-main button.pri .ic {
   color: #4a0a5e;
 }
 
-/* Jarak fleksibel sebelum tombol keluar */
-.editor-menu-spacer {
-  flex: 1 0 12px;
+/* Ruang pemisah */
+#adminUI .editor-menu-spacer {
+  flex: 0 0 12px;
   min-height: 12px;
+  pointer-events: none;
 }
 
-/* Keluar di bagian bawah */
-.panel button.editor-logout {
-  flex-shrink: 0;
+/* Tombol logout */
+#adminUI .panel button.editor-logout {
   margin-top: 5px;
   padding-top: 13px;
+
   border-top: 1px solid #ffffff25;
   border-radius: 0 0 10px 10px;
+
   color: #ff7fdc;
 }
 
-.panel button.editor-logout .ic {
+#adminUI .panel button.editor-logout .ic {
   color: #ff7fdc;
 }
 
-.panel button.editor-logout:hover {
+#adminUI .panel button.editor-logout:hover {
   background: #4a0a5e;
 }
 
 /* Modal edit profil */
-.profile-modal-card {
+#adminUI .profile-modal-card {
+  box-sizing: border-box;
   width: min(92vw, 390px);
+  max-width: 100%;
 }
 
-.profile-preview-wrap {
+#adminUI .profile-preview-wrap {
   display: grid;
   justify-items: center;
   gap: 10px;
   padding: 8px 0 14px;
 }
 
-.profile-preview {
+#adminUI .profile-preview {
   width: 100px;
   height: 100px;
+
   object-fit: cover;
   border-radius: 50%;
   border: 3px solid #ff7fdc;
+
   background: #4a0a5e;
   box-shadow: 0 0 18px #c0149a45;
 }
 
-.profile-photo-button {
+#adminUI .profile-photo-button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 7px;
+
   width: fit-content;
+  cursor: pointer;
+  touch-action: manipulation;
 }
 
-.profile-help {
+#adminUI .profile-help {
   color: #ffffffa8;
   font: .82rem/1.5 sans-serif;
   text-align: center;
 }
 
-/* Fokus aksesibilitas */
-.panel button:focus-visible,
-.burger:focus-visible {
+/* Fokus keyboard saja */
+#adminUI .panel button:focus-visible,
+#adminUI .burger:focus-visible {
   outline: 2px solid #ff7fdc;
   outline-offset: 2px;
 }
 
+/* Kurangi animasi jika diminta perangkat */
+@media (prefers-reduced-motion: reduce) {
+  #adminUI .menu2 .burger,
+  #adminUI .panel .editor-menu-main button,
+  #adminUI .panel button.editor-logout {
+    transition: none;
+  }
+}
+
+/* Tampilan HP */
 @media (max-width: 480px) {
-  .panel {
-    width: min(290px, calc(100vw - 28px));
+  #adminUI .menu2 {
+    top: 12px !important;
+    left: 12px !important;
+    right: auto !important;
+  }
+
+  #adminUI .menu2 .panel {
+    top: 50px !important;
+    left: 0 !important;
+    right: auto !important;
+
+    width: min(290px, calc(100vw - 24px));
+    max-width: calc(100vw - 24px);
+
+    max-height: calc(100vh - 76px);
+    max-height: calc(100dvh - 76px);
+
     padding: 10px;
   }
 
-  .editor-avatar {
+  #adminUI .editor-avatar {
     width: 54px;
     height: 54px;
     flex-basis: 54px;
   }
 
-  .editor-profile-name {
+  #adminUI .editor-profile-name {
     font-size: 1.1rem;
+  }
+}
+
+/* =====================================================
+   KOMPONEN DASAR EDITOR
+   Login, modal, form, tombol, toast, pengelola foto/lagu.
+   (Bagian ini sempat hilang saat sidebar didesain ulang.)
+   ===================================================== */
+
+/* Ikon SVG (sidebar dan tombol ganti foto) */
+.ic {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vertical-align: -3px;
+}
+
+/* Latar gelap di belakang kartu */
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  overflow-y: auto;
+  background: rgba(10, 0, 14, .72);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+}
+
+/* Kartu */
+.card {
+  box-sizing: border-box;
+  display: grid;
+  gap: 12px;
+  width: min(92vw, 420px);
+  max-height: 90vh;
+  max-height: 90dvh;
+  padding: 22px 20px;
+  overflow: auto;
+  text-align: left;
+  color: var(--cream);
+  background: linear-gradient(180deg, #2d0838, #220522);
+  border: 1px solid #ffffff2e;
+  border-radius: 18px;
+  box-shadow: 0 24px 60px #0008;
+}
+
+.card h3 {
+  margin: 0;
+  font-size: 2.2rem;
+  font-weight: 400;
+  line-height: 1.1;
+  text-align: center;
+}
+
+.card label {
+  display: grid;
+  gap: 6px;
+  color: #ffd1ec;
+  font-size: 1.05rem;
+}
+
+/* Kolom isian */
+.card input,
+.card textarea {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 10px 12px;
+  color: #fff;
+  font: 1rem/1.4 Georgia, serif;
+  color-scheme: dark;
+  background: #120012;
+  border: 1px solid #ffffff47;
+  border-radius: 10px;
+  outline: 0;
+  transition: border-color .18s, box-shadow .18s;
+}
+
+.card textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.card input::placeholder,
+.card textarea::placeholder {
+  color: #ffffff73;
+}
+
+.card input:focus,
+.card textarea:focus {
+  border-color: #ff7fdc;
+  box-shadow: 0 0 0 3px #ff7fdc40;
+}
+
+.card input[readonly] {
+  opacity: .7;
+  cursor: not-allowed;
+}
+
+/* Tombol di dalam kartu */
+.card button {
+  min-height: 42px;
+  padding: 10px 16px;
+  color: #fff;
+  font: 600 1rem "Cormorant Garamond", serif;
+  background: #3a0a48;
+  border: 1px solid #ffffff59;
+  border-radius: 10px;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: background .18s, transform .1s, filter .18s;
+}
+
+.card button:hover {
+  background: #4a0a5e;
+}
+
+.card button:active {
+  transform: translateY(1px);
+}
+
+.card button:disabled {
+  opacity: .5;
+  cursor: not-allowed;
+}
+
+/* Tombol utama (Masuk, OK, Simpan profil, Selesai, Tambah) */
+.pri {
+  background: var(--green) !important;
+  color: #4a0a5e !important;
+}
+
+.card .pri {
+  font-weight: 700;
+  border-color: #c0149a;
+}
+
+.card .pri:hover {
+  filter: brightness(1.06);
+}
+
+/* Baris tombol */
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.card .row {
+  margin-top: 6px;
+}
+
+.card .row button {
+  min-width: 92px;
+}
+
+/* Pesan kecil dan label */
+.mlabel {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.4;
+  opacity: .85;
+}
+
+.mlabel:empty {
+  display: none;
+}
+
+/* Kartu login */
+#firebaseAuth .mlabel {
+  text-align: center;
+}
+
+#firebaseAuth .card > button:not(.pri) {
+  min-height: 0;
+  padding: 6px 10px;
+  color: #ff7fdc;
+  background: transparent;
+  border-color: transparent;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+#firebaseAuth .card > button:not(.pri):hover {
+  color: #ffd1ec;
+  background: transparent;
+}
+
+/* Pengelola foto, lagu, dan wishlist */
+.mbody {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  max-height: calc(90vh - 150px);
+  max-height: calc(90dvh - 150px);
+  overflow-y: auto;
+}
+
+.mbody > .mlabel {
+  margin-top: 6px;
+}
+
+.mgrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.mt {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background: #f3d6ec center / cover;
+  border: 1px solid #ffffff47;
+  border-radius: 8px;
+}
+
+.mt .tb {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  gap: 4px;
+  padding: 18px 4px 4px;
+  background: linear-gradient(transparent, #000000bf);
+}
+
+.card .tb button {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  padding: 5px 0;
+  font-size: .9rem;
+  border-radius: 8px;
+}
+
+.card .mt.add {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  color: #ffd1ec;
+  font-size: 2rem;
+  background: transparent;
+  border: 2px dashed #ff7fdc;
+  border-radius: 8px;
+}
+
+.card .mt.add:hover {
+  background: #ff7fdc1f;
+}
+
+.mlist {
+  display: grid;
+  gap: 8px;
+}
+
+.mrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  background: #0000004d;
+  border: 1px solid #ffffff33;
+  border-radius: 10px;
+}
+
+.mrow span {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.1rem;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+
+.mrow small {
+  opacity: .8;
+}
+
+.card .mrow button {
+  min-width: 0;
+  min-height: 0;
+  padding: 6px 12px;
+}
+
+/* Baris daftar lagu di halaman Playlist */
+.song {
+  display: flex;
+  gap: 8px;
+  align-items: stretch;
+}
+
+/* Titik penanda "ada perubahan belum disimpan" di tombol hamburger */
+#adminUI .menu2 .burger.dirty::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 12px;
+  height: 12px;
+  background: var(--green);
+  border: 2px solid #1a0020;
+  border-radius: 50%;
+}
+
+/* Notifikasi kecil di bawah */
+#toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  z-index: 100001;
+  box-sizing: border-box;
+  max-width: min(92vw, 420px);
+  padding: 10px 16px;
+  font-size: 1.05rem;
+  text-align: center;
+  background: #14001ae8;
+  border: 1px solid #ffffff33;
+  border-radius: 12px;
+  opacity: 0;
+  transform: translateX(-50%);
+  transition: opacity .3s;
+  pointer-events: none;
+}
+
+/* =====================================================
+   PERAPIAN SIDEBAR
+   ===================================================== */
+
+#adminUI .menu2 .panel.on {
+  transform-origin: top left;
+  animation: panelIn .18s ease-out;
+}
+
+@keyframes panelIn {
+  from { opacity: 0; transform: translateY(-6px) scale(.98); }
+  to   { opacity: 1; transform: none; }
+}
+
+#adminUI .panel .editor-menu-main button:active,
+#adminUI .panel button.editor-logout:active {
+  transform: translateY(1px);
+}
+
+#adminUI .panel .editor-menu-main button:disabled {
+  opacity: .45;
+  cursor: not-allowed;
+}
+
+#adminUI .panel .editor-menu-main button:disabled:hover {
+  background: var(--green);
+  border-color: transparent;
+}
+
+#adminUI .panel .editor-menu-main button:focus-visible,
+#adminUI .panel button.editor-logout:focus-visible {
+  outline: 2px solid #ff7fdc;
+  outline-offset: -2px;
+}
+
+/* Tombol ganti foto di jendela edit profil */
+#adminUI .profile-photo-button {
+  min-height: 0;
+  padding: 7px 14px;
+}
+
+#adminUI .profile-photo-button .ic {
+  stroke: currentColor;
+}
+
+@media (max-width: 380px) {
+  .card {
+    padding: 18px 14px;
+  }
+
+  .card h3 {
+    font-size: 1.9rem;
   }
 }
