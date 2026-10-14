@@ -1,61 +1,94 @@
 
-/* Mode edit: tambah, ubah, hapus foto dan lagu, ubah teks */
-var admin=false,dirty=false;
+/* Mode edit: tambah, ubah, hapus foto dan lagu */
+var admin = false, dirty = false;
 
-function compress(f){
-  return new Promise(function(ok,no){
-    var i=new Image(),u=URL.createObjectURL(f);
-    i.onload=function(){
-      var k=Math.min(1,800/Math.max(i.width,i.height)),
-          c=document.createElement("canvas");
-      c.width=Math.round(i.width*k);
-      c.height=Math.round(i.height*k);
-      c.getContext("2d").drawImage(i,0,0,c.width,c.height);
+/* Kompres foto */
+function compress(f) {
+  return new Promise(function (ok, no) {
+    var i = new Image(), u = URL.createObjectURL(f);
+
+    i.onload = function () {
+      var k = Math.min(1, 800 / Math.max(i.width, i.height));
+      var c = document.createElement("canvas");
+
+      c.width = Math.round(i.width * k);
+      c.height = Math.round(i.height * k);
+      c.getContext("2d").drawImage(i, 0, 0, c.width, c.height);
+
       URL.revokeObjectURL(u);
-      ok(c.toDataURL("image/jpeg",.72));
+      ok(c.toDataURL("image/jpeg", 0.72));
     };
-    i.onerror=no;
-    i.src=u;
+
+    i.onerror = function () {
+      URL.revokeObjectURL(u);
+      no(new Error("Foto gagal dibaca"));
+    };
+
+    i.src = u;
   });
 }
 
-function pick(multi,cb){
-  var i=document.createElement("input");
-  i.type="file";
-  i.accept="image/*";
-  i.multiple=multi;
-  i.onchange=function(){
-    Promise.all([].map.call(i.files,compress))
+/* Memilih foto */
+function pick(multi, cb) {
+  var i = document.createElement("input");
+
+  i.type = "file";
+  i.accept = "image/*";
+  i.multiple = multi;
+
+  i.onchange = function () {
+    Promise.all([].map.call(i.files, compress))
       .then(cb)
-      .catch(function(){toast("Foto gagal dibaca")});
+      .catch(function () {
+        toast("Foto gagal dibaca");
+      });
   };
+
   i.click();
 }
 
-function form(title,fs,o,ok){
-  var m=el("div","modal"),f=el("div","card");
-  f.appendChild(el("h3","script",title));
-  var ins={};
+/* Form umum */
+function form(title, fs, o, ok) {
+  var m = el("div", "modal"),
+      f = el("div", "card");
 
-  fs.forEach(function(x){
-    var l=el("label",null,x.l),i=el(x.big?"textarea":"input");
-    if(x.big)i.rows=5;
-    else i.type=x.type||"text";
-    i.value=o[x.k]||"";
+  f.appendChild(el("h3", "script", title));
+
+  var ins = {};
+
+  fs.forEach(function (x) {
+    var l = el("label", null, x.l),
+        i = el(x.big ? "textarea" : "input");
+
+    if (x.big) {
+      i.rows = 5;
+    } else {
+      i.type = x.type || "text";
+    }
+
+    i.value = o[x.k] || "";
     l.appendChild(i);
     f.appendChild(l);
-    ins[x.k]=i;
+    ins[x.k] = i;
   });
 
-  var b=el("div","row"),
-      c=el("button",null,"Batal"),
-      s=el("button","pri","OK");
+  var b = el("div", "row"),
+      c = el("button", null, "Batal"),
+      s = el("button", "pri", "OK");
 
-  c.onclick=function(){m.remove()};
+  c.type = s.type = "button";
 
-  s.onclick=function(){
-    var v={};
-    for(var k in ins)v[k]=ins[k].value.trim();
+  c.onclick = function () {
+    m.remove();
+  };
+
+  s.onclick = function () {
+    var v = {};
+
+    for (var k in ins) {
+      v[k] = ins[k].value.trim();
+    }
+
     m.remove();
     ok(v);
   };
@@ -64,122 +97,163 @@ function form(title,fs,o,ok){
   b.appendChild(s);
   f.appendChild(b);
   m.appendChild(f);
-  $("#adminUI").appendChild(m);
+
+  var target = $("#adminUI") || document.body;
+  target.appendChild(m);
 }
 
-function chg(){
-  dirty=true;
+/* Menandai perubahan */
+function chg() {
+  dirty = true;
   render();
 }
 
-/* Logout dari Firebase */
-async function logoutAdmin(){
-  try{
-    if(typeof firebase!=="undefined" && firebase.auth){
+/* Logout Firebase */
+async function logoutAdmin() {
+  try {
+    if (typeof firebase !== "undefined" && firebase.auth) {
       await firebase.auth().signOut();
     }
 
-    /* Hapus penanda mode edit dari URL */
-    window.location.href=window.location.pathname;
-  }catch(e){
-    toast("Gagal keluar: "+e.message);
+    /* Kembali ke halaman login editor */
+    window.location.href =
+      window.location.pathname + "?edit";
+  } catch (e) {
+    toast("Gagal keluar: " + e.message);
   }
 }
 
 /* Menu edit */
-function bar(){
-  var u=$("#adminUI"),
-      b=el("div","menu2"),
-      h=el("button","burger","☰"),
-      p=el("div","panel"),
-      t=el("button"),
-      s=el("button","pri");
+function bar() {
+  var u = $("#adminUI");
 
-  t.innerHTML=
+  if (!u) return;
+
+  /* Hindari menu garis tiga ganda */
+  var existing = u.querySelector(".menu2");
+  if (existing) existing.remove();
+
+  var b = el("div", "menu2"),
+      h = el("button", "burger", "☰"),
+      p = el("div", "panel"),
+      t = el("button"),
+      s = el("button", "pri");
+
+  h.type = t.type = s.type = "button";
+
+  t.innerHTML =
     '<svg class="ic" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg> Teks';
 
-  s.innerHTML=
+  s.innerHTML =
     '<svg class="ic" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg> Simpan';
 
-  h.setAttribute("aria-label","Menu edit");
-  h.onclick=function(){p.classList.toggle("on")};
+  h.setAttribute("aria-label", "Menu edit");
+  h.setAttribute("aria-expanded", "false");
 
-  s.id="save";
-  s.disabled=true;
+  h.onclick = function () {
+    var opened = p.classList.toggle("on");
+    h.setAttribute("aria-expanded", String(opened));
+  };
 
-  t.onclick=function(){
+  s.id = "save";
+  s.disabled = true;
+
+  t.onclick = function () {
     p.classList.remove("on");
+
     form(
       "Pengaturan",
       [
-        {k:"her",l:"Nama pacar"},
-        {k:"him",l:"Namamu"},
-        {k:"since",l:"Tanggal jadian",type:"datetime-local"},
-        {k:"letter",l:"Isi surat",big:1},
-        {k:"gift",l:"Isi kupon hadiah",big:1}
+        { k: "her", l: "Nama pacar" },
+        { k: "him", l: "Namamu" },
+        { k: "since", l: "Tanggal jadian", type: "datetime-local" },
+        { k: "letter", l: "Isi surat", big: 1 },
+        { k: "gift", l: "Isi kupon hadiah", big: 1 }
       ],
       D,
-      function(v){
-        Object.assign(D,v);
+      function (v) {
+        Object.assign(D, v);
         chg();
       }
     );
   };
 
-  s.onclick=function(){
+  s.onclick = function () {
     p.classList.remove("on");
     save();
   };
 
-  var fb=el("button"),
-      lb=el("button"),
-      out=el("button");
+  var fb = el("button"),
+      lb = el("button"),
+      gb = el("button"),
+      ub = el("button"),
+      out = el("button");
 
-  fb.innerHTML=
+  [fb, lb, gb, ub, out].forEach(function (button) {
+    button.type = "button";
+  });
+
+  fb.innerHTML =
     '<svg class="ic" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M4 17l5-4 4 3 3-2 4 3"/></svg> Foto';
 
-  lb.innerHTML=
+  lb.innerHTML =
     '<svg class="ic" viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="16" r="2"/></svg> Lagu';
 
-  fb.onclick=function(){
+  gb.innerHTML =
+    '<svg class="ic" viewBox="0 0 24 24"><path d="M12 4l2.4 5 5.4.6-4 3.7 1.1 5.4L12 16l-4.9 2.7 1.1-5.4-4-3.7 5.4-.6z"/></svg> Wishlist';
+
+  ub.innerHTML =
+    '<svg class="ic" viewBox="0 0 24 24"><path d="M12 16V5M7 9l5-5 5 5M5 19h14"/></svg> Terbitkan';
+
+  fb.onclick = function () {
     p.classList.remove("on");
     photoManager();
   };
 
-  var gb=el("button");
-  gb.innerHTML=
-    '<svg class="ic" viewBox="0 0 24 24"><path d="M12 4l2.4 5 5.4.6-4 3.7 1.1 5.4L12 16l-4.9 2.7 1.1-5.4-4-3.7 5.4-.6z"/></svg> Wishlist';
-
-  gb.onclick=function(){
-    p.classList.remove("on");
-    dateManager();
-  };
-
-  var ub=el("button");
-  ub.innerHTML=
-    '<svg class="ic" viewBox="0 0 24 24"><path d="M12 16V5M7 9l5-5 5 5M5 19h14"/></svg> Terbitkan';
-
-  ub.onclick=function(){
-    p.classList.remove("on");
-    publish();
-  };
-
-  lb.onclick=function(){
+  lb.onclick = function () {
     p.classList.remove("on");
     songManager();
   };
 
-  /* Tombol Keluar */
-  out.textContent="Keluar";
-  out.onclick=function(){
+  gb.onclick = function () {
+    p.classList.remove("on");
+    dateManager();
+  };
+
+  ub.onclick = function () {
+    p.classList.remove("on");
+    publish();
+  };
+
+  out.textContent = "Keluar";
+
+  out.onclick = function () {
     p.classList.remove("on");
 
-    if(confirm("Yakin ingin keluar dari akun edit?")){
+    if (confirm("Yakin ingin keluar dari akun edit?")) {
       logoutAdmin();
     }
   };
 
-  p.appendChild(el("b",null,"Mode edit"));
+  /* Judul dan email akun Firebase */
+  p.appendChild(el("b", null, "Mode edit"));
+
+  var email = (
+    typeof fbUser !== "undefined" &&
+    fbUser &&
+    fbUser.email
+  ) ? fbUser.email : "";
+
+  var accountLabel = el(
+    "div",
+    "mlabel",
+    email ? "Akun: " + email : "Akun editor"
+  );
+
+  accountLabel.style.overflowWrap = "anywhere";
+  accountLabel.style.marginBottom = "12px";
+  p.appendChild(accountLabel);
+
   p.appendChild(t);
   p.appendChild(fb);
   p.appendChild(lb);
@@ -193,32 +267,35 @@ function bar(){
   u.appendChild(b);
 }
 
-/* ---- Pengelola foto dan lagu ---- */
-var mgr=null;
+/* Pengelola foto dan lagu */
+var mgr = null;
 
-function manager(title,build){
-  var m=el("div","modal"),
-      f=el("div","card"),
-      body=el("div","mbody"),
-      r=el("div","row"),
-      c=el("button","pri","Selesai");
+function manager(title, build) {
+  var m = el("div", "modal"),
+      f = el("div", "card"),
+      body = el("div", "mbody"),
+      r = el("div", "row"),
+      c = el("button", "pri", "Selesai");
 
-  f.appendChild(el("h3","script",title));
+  f.appendChild(el("h3", "script", title));
   f.appendChild(body);
 
-  c.onclick=function(){
+  c.type = "button";
+  c.onclick = function () {
     m.remove();
-    mgr=null;
+    mgr = null;
   };
 
   r.appendChild(c);
   f.appendChild(r);
   m.appendChild(f);
-  $("#adminUI").appendChild(m);
 
-  mgr={
-    refresh:function(){
-      body.innerHTML="";
+  var target = $("#adminUI") || document.body;
+  target.appendChild(m);
+
+  mgr = {
+    refresh: function () {
+      body.innerHTML = "";
       build(body);
     }
   };
@@ -226,48 +303,59 @@ function manager(title,build){
   mgr.refresh();
 }
 
-function sure(btn,fn){
-  /* Hapus perlu dua ketukan */
-  if(btn.dataset.s){
+/* Konfirmasi hapus dua ketukan */
+function sure(btn, fn) {
+  if (btn.dataset.s) {
     fn();
     return;
   }
 
-  btn.dataset.s=1;
-  var t=btn.textContent;
-  btn.textContent="Yakin?";
+  btn.dataset.s = "1";
 
-  setTimeout(function(){
+  var t = btn.textContent;
+  btn.textContent = "Yakin?";
+
+  setTimeout(function () {
     delete btn.dataset.s;
-    btn.textContent=t;
-  },2200);
+    btn.textContent = t;
+  }, 2200);
 }
 
-function tile(src,set,del){
-  var t=el("div","mt"),
-      tb=el("div","tb"),
-      e=el("button",null,src?"Ganti":"Pilih"),
+/* Kartu foto */
+function tile(src, set, del) {
+  var t = el("div", "mt"),
+      tb = el("div", "tb"),
+      e = el("button", null, src ? "Ganti" : "Pilih"),
       x;
 
-  if(src)t.style.backgroundImage="url('"+src+"')";
+  e.type = "button";
 
-  e.onclick=function(){
-    pick(false,function(r){
-      set(r[0]);
-      chg();
+  if (src) {
+    t.style.backgroundImage = "url('" + src + "')";
+  }
+
+  e.onclick = function () {
+    pick(false, function (r) {
+      if (r.length) {
+        set(r[0]);
+        chg();
+      }
     });
   };
 
   tb.appendChild(e);
 
-  if(src){
-    x=el("button",null,"Hapus");
-    x.onclick=function(){
-      sure(x,function(){
+  if (src) {
+    x = el("button", null, "Hapus");
+    x.type = "button";
+
+    x.onclick = function () {
+      sure(x, function () {
         del();
         chg();
       });
     };
+
     tb.appendChild(x);
   }
 
@@ -275,49 +363,54 @@ function tile(src,set,del){
   return t;
 }
 
-function photoManager(){
-  manager("Kelola foto",function(b){
-    b.appendChild(el("p","mlabel","Foto di samping surat (halaman Moment)"));
+/* Pengelola foto */
+function photoManager() {
+  manager("Kelola foto", function (b) {
+    b.appendChild(
+      el("p", "mlabel", "Foto di samping surat (halaman Moment)")
+    );
 
-    var g0=el("div","mgrid");
+    var g0 = el("div", "mgrid");
 
     g0.appendChild(
       tile(
         D.portrait,
-        function(v){D.portrait=v},
-        function(){D.portrait=""}
+        function (v) { D.portrait = v; },
+        function () { D.portrait = ""; }
       )
     );
 
     b.appendChild(g0);
 
     b.appendChild(
-      el("p","mlabel","Polaroid (halaman Journey): "+D.photos.length+" dari 12")
+      el("p", "mlabel", "Polaroid (halaman Journey): " + D.photos.length + " dari 12")
     );
 
-    var g=el("div","mgrid");
+    var g = el("div", "mgrid");
 
-    D.photos.forEach(function(p,i){
+    D.photos.forEach(function (photo, i) {
       g.appendChild(
         tile(
-          p.src,
-          function(v){p.src=v},
-          function(){D.photos.splice(i,1)}
+          photo.src,
+          function (v) { photo.src = v; },
+          function () { D.photos.splice(i, 1); }
         )
       );
     });
 
-    if(D.photos.length<12){
-      var a=el("button","mt add","＋");
-      a.setAttribute("aria-label","Tambah foto");
+    if (D.photos.length < 12) {
+      var a = el("button", "mt add", "＋");
+      a.type = "button";
+      a.setAttribute("aria-label", "Tambah foto");
 
-      a.onclick=function(){
-        pick(true,function(r){
-          r.forEach(function(x){
-            if(D.photos.length<12){
-              D.photos.push({id:uid(),src:x});
+      a.onclick = function () {
+        pick(true, function (r) {
+          r.forEach(function (x) {
+            if (D.photos.length < 12) {
+              D.photos.push({ id: uid(), src: x });
             }
           });
+
           chg();
         });
       };
@@ -329,27 +422,32 @@ function photoManager(){
   });
 }
 
-function songManager(){
-  manager("Kelola lagu",function(b){
-    var l=el("div","mlist");
+/* Pengelola lagu */
+function songManager() {
+  manager("Kelola lagu", function (b) {
+    var l = el("div", "mlist");
 
-    D.songs.forEach(function(s,i){
-      var r=el("div","mrow"),
-          t=el("span",null,s.t),
-          e=el("button",null,"✎"),
-          x=el("button",null,"✕");
+    D.songs.forEach(function (song, i) {
+      var r = el("div", "mrow"),
+          t = el("span", null, song.t),
+          e = el("button", null, "✎"),
+          x = el("button", null, "✕");
+
+      e.type = x.type = "button";
 
       t.appendChild(document.createElement("br"));
-      t.appendChild(el("small",null,s.a));
+      t.appendChild(el("small", null, song.a));
 
-      e.setAttribute("aria-label","Edit lagu");
-      x.setAttribute("aria-label","Hapus lagu");
+      e.setAttribute("aria-label", "Edit lagu");
+      x.setAttribute("aria-label", "Hapus lagu");
 
-      e.onclick=function(){songForm(s)};
+      e.onclick = function () {
+        songForm(song);
+      };
 
-      x.onclick=function(){
-        sure(x,function(){
-          D.songs.splice(i,1);
+      x.onclick = function () {
+        sure(x, function () {
+          D.songs.splice(i, 1);
           chg();
         });
       };
@@ -360,71 +458,77 @@ function songManager(){
       l.appendChild(r);
     });
 
-    if(!D.songs.length){
-      l.appendChild(el("p","mlabel","Belum ada lagu."));
+    if (!D.songs.length) {
+      l.appendChild(el("p", "mlabel", "Belum ada lagu."));
     }
 
     b.appendChild(l);
 
-    var a=el("button","pri","＋ Tambah lagu");
-    a.onclick=function(){songForm()};
+    var a = el("button", "pri", "＋ Tambah lagu");
+    a.type = "button";
+    a.onclick = function () { songForm(); };
+
     b.appendChild(a);
   });
 }
 
-function dateForm(o){
-  var n=!o;
-  o=o||{id:uid(),e:"",t:"",d:""};
+/* Form wishlist */
+function dateForm(o) {
+  var n = !o;
+  o = o || { id: uid(), e: "", t: "", d: "" };
 
   form(
-    n?"Tambah wishlist":"Edit wishlist",
+    n ? "Tambah wishlist" : "Edit wishlist",
     [
-      {k:"e",l:"Emoji (satu saja)"},
-      {k:"t",l:"Judul"},
-      {k:"d",l:"Keterangan singkat (opsional)"}
+      { k: "e", l: "Emoji (satu saja)" },
+      { k: "t", l: "Judul" },
+      { k: "d", l: "Keterangan singkat (opsional)" }
     ],
     o,
-    function(v){
-      if(!v.t){
+    function (v) {
+      if (!v.t) {
         toast("Judul wajib diisi");
         return;
       }
 
-      Object.assign(o,v);
+      Object.assign(o, v);
 
-      if(!o.e)o.e="\uD83D\uDC95";
-      if(n)D.dates.push(o);
+      if (!o.e) o.e = "💗";
+      if (n) D.dates.push(o);
 
       chg();
     }
   );
 }
 
-function dateManager(){
-  manager("Wishlist minggu ini",function(b){
-    if(!D.dates)D.dates=[];
+/* Pengelola wishlist */
+function dateManager() {
+  manager("Wishlist minggu ini", function (b) {
+    if (!D.dates) D.dates = [];
 
-    var l=el("div","mlist");
+    var l = el("div", "mlist");
 
-    D.dates.forEach(function(o,i){
-      var r=el("div","mrow"),
-          t=el("span",null,o.e+" "+o.t),
-          e=el("button",null,"\u270E"),
-          x=el("button",null,"\u2715");
+    D.dates.forEach(function (o, i) {
+      var r = el("div", "mrow"),
+          t = el("span", null, o.e + " " + o.t),
+          e = el("button", null, "✎"),
+          x = el("button", null, "✕");
 
-      if(o.d){
+      e.type = x.type = "button";
+
+      if (o.d) {
         t.appendChild(document.createElement("br"));
-        t.appendChild(el("small",null,o.d));
+        t.appendChild(el("small", null, o.d));
       }
 
-      e.setAttribute("aria-label","Edit pilihan");
-      x.setAttribute("aria-label","Hapus pilihan");
+      e.setAttribute("aria-label", "Edit pilihan");
+      x.setAttribute("aria-label", "Hapus pilihan");
 
-      e.onclick=function(){dateForm(o)};
+      e.onclick = function () { dateForm(o); };
 
-      x.onclick=function(){
-        sure(x,function(){
-          D.dates.splice(i,1);
+      x.onclick = function () {
+        sure(x, function () {
+          D.dates.splice(i, 1);
           chg();
         });
       };
@@ -435,68 +539,73 @@ function dateManager(){
       l.appendChild(r);
     });
 
-    if(!D.dates.length){
-      l.appendChild(el("p","mlabel","Belum ada wishlist."));
+    if (!D.dates.length) {
+      l.appendChild(el("p", "mlabel", "Belum ada wishlist."));
     }
 
     b.appendChild(l);
 
-    if(D.dates.length<6){
-      var a=el("button","pri","\uFF0B Tambah wishlist");
-      a.onclick=function(){dateForm()};
+    if (D.dates.length < 6) {
+      var a = el("button", "pri", "＋ Tambah wishlist");
+      a.type = "button";
+      a.onclick = function () { dateForm(); };
       b.appendChild(a);
     }
 
     b.appendChild(
-      el("p","mlabel","Kalimat pembuka di atas daftar diubah lewat menu Teks (Isi kupon hadiah).")
+      el("p", "mlabel", "Kalimat pembuka di atas daftar diubah lewat menu Teks (Isi kupon hadiah).")
     );
   });
 }
 
-async function save(){
-  $("#save").disabled=true;
+/* Simpan data */
+async function save() {
+  var saveButton = $("#save");
 
-  if(!saveData(D)){
-    $("#save").disabled=false;
+  if (saveButton) saveButton.disabled = true;
+
+  if (!saveData(D)) {
+    if (saveButton) saveButton.disabled = false;
     toast("Terlalu besar, hapus beberapa foto");
     return;
   }
 
-  try{
-    if(firebaseConfigured() && !isLocal()){
+  try {
+    if (firebaseConfigured() && !isLocal()) {
       await saveCloud(D);
     }
 
-    dirty=false;
+    dirty = false;
     render();
 
     toast(
-      firebaseConfigured()&&!isLocal()
-        ?"Tersimpan dan tersinkron untuk kalian berdua"
-        :"Tersimpan di perangkat ini"
+      firebaseConfigured() && !isLocal()
+        ? "Tersimpan dan tersinkron untuk kalian berdua"
+        : "Tersimpan di perangkat ini"
     );
-  }catch(e){
-    $("#save").disabled=false;
-    toast("Gagal menyimpan ke cloud: "+e.message);
+  } catch (e) {
+    if (saveButton) saveButton.disabled = false;
+    toast("Gagal menyimpan ke cloud: " + e.message);
   }
 }
 
-/* Mode edit lokal atau melalui ?edit */
-function isLocal(){
-  var h=location.hostname;
+/* Pemeriksaan lokal */
+function isLocal() {
+  var h = location.hostname;
 
-  return location.protocol==="file:" ||
-    h==="localhost" ||
-    h==="127.0.0.1" ||
-    h.slice(-6)===".local" ||
+  return location.protocol === "file:" ||
+    h === "localhost" ||
+    h === "127.0.0.1" ||
+    h.slice(-6) === ".local" ||
     /^(192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.)/.test(h);
 }
 
-function initAdmin(){
-  var q=new URLSearchParams(location.search);
+/* Memulai mode edit */
+function initAdmin() {
+  var q = new URLSearchParams(location.search);
 
-  if(q.has(ADMIN_PARAM) || (isLocal()&&!q.has(VIEW_PARAM))){
-    admin=true;
+  if (q.has(ADMIN_PARAM) || (isLocal() && !q.has(VIEW_PARAM))) {
+    admin = true;
     document.body.classList.add("adm");
     bar();
     render();
