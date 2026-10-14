@@ -10,7 +10,7 @@ function fileNote(b,id){
 }
 function player(auto){
  var b=$("#pl");b.innerHTML="";if(!plOn)return;var s=D.songs[cur];
- if(!s){shown="";b.appendChild(el("p","hint","Belum ada lagu."));return}
+ if(!s){shown="";b.appendChild(el("p","hint","Belum ada lagu. Tambah lewat menu ☰ di kiri atas."));return}
  shown=cur+":"+s.u;var id=yid(s.u);
  if(id&&location.protocol==="file:"){fileNote(b,id)}
  else if(id){var f=document.createElement("iframe");f.className="vid";f.src="https://www.youtube.com/embed/"+id+"?rel=0&playsinline=1&enablejsapi=1&origin="+encodeURIComponent(location.origin)+(auto?"&autoplay=1":"");f.title=s.t;f.allow="autoplay; encrypted-media; picture-in-picture; fullscreen";f.allowFullscreen=true;f.referrerPolicy="strict-origin-when-cross-origin";b.appendChild(f)}
