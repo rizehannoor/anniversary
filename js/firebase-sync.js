@@ -89,7 +89,6 @@ function centerElement(element, marginTop) {
 function showAuth() {
   if ($("#firebaseAuth")) return;
 
-  /* Bersihkan riwayat email lama yang pernah tersimpan di browser ini */
   try {
     localStorage.removeItem("our-anniversary:email-history");
   } catch (e) {}
@@ -128,6 +127,7 @@ function showAuth() {
   function eyeIcon(slashed) {
     var ns = "http://www.w3.org/2000/svg";
     var svg = document.createElementNS(ns, "svg");
+
     var paths = [
       "M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z",
       "M12 9a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"
@@ -153,10 +153,12 @@ function showAuth() {
 
     toggle.innerHTML = "";
     toggle.appendChild(eyeIcon(shown));
+
     toggle.setAttribute(
       "aria-label",
       shown ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"
     );
+
     toggle.setAttribute("aria-pressed", String(shown));
   }
 
@@ -199,6 +201,7 @@ function showAuth() {
   m.appendChild(f);
   document.body.appendChild(m);
 
+  /* Proses login */
   async function runLogin() {
     var mail = email.value.trim();
     var password = pass.value;
@@ -252,6 +255,7 @@ function showAuth() {
 
       if (!isLocal() && !params.has(ADMIN_PARAM)) {
         params.set(ADMIN_PARAM, "");
+
         var query = params.toString();
 
         history.replaceState(
@@ -339,6 +343,7 @@ function showAuth() {
         e.code,
         e.message
       );
+
       msg.textContent = authError(e);
     } finally {
       resend.disabled = false;
@@ -370,6 +375,18 @@ function authError(e) {
 
   if (e.code === "auth/user-disabled") {
     return "Akun ini sedang dinonaktifkan.";
+  }
+
+  if (e.code === "auth/operation-not-allowed") {
+    return "Metode login email dan kata sandi belum diaktifkan di Firebase.";
+  }
+
+  if (e.code === "auth/unauthorized-continue-uri") {
+    return "Domain website belum diizinkan untuk proses autentikasi.";
+  }
+
+  if (e.code === "auth/too-many-requests") {
+    return "Terlalu banyak percobaan. Coba lagi nanti.";
   }
 
   return "Gagal: " + (
@@ -413,27 +430,7 @@ function bootCloud() {
     fbUser = user;
     fbReady = true;
 
-    if (user && (!user.emailVerified || !isAllowedEditor(user))) {
-      var reason = !user.emailVerified
-        ? "Email belum terverifikasi. Periksa kotak masuk dan Spam."
-        : "Email ini tidak diizinkan mengedit website.";
-
-      hideAdmin();
-
-      try {
-        await fbAuth.signOut();
-      } catch (e) {
-        console.error("Firebase sign-out error:", e);
-      }
-
-      showAuth();
-
-      var msg = $("#firebaseAuth .mlabel:last-of-type");
-      if (msg) msg.textContent = reason;
-
-      return;
-    }
-
+    /* Tidak ada pengguna yang login */
     if (!user) {
       if (fbUnsub) {
         fbUnsub();
@@ -445,6 +442,48 @@ function bootCloud() {
       return;
     }
 
+    /*
+     * Akun belum terverifikasi:
+     * sembunyikan admin, tetapi jangan melakukan signOut
+     * di listener ini. Proses login/resend yang mengatur sesi.
+     */
+    if (!user.emailVerified) {
+      hideAdmin();
+      showAuth();
+
+      var unverifiedMsg = $("#firebaseAuth .mlabel:last-of-type");
+
+      if (unverifiedMsg) {
+        unverifiedMsg.textContent =
+          "Email belum terverifikasi. Gunakan tombol Kirim ulang verifikasi.";
+      }
+
+      return;
+    }
+
+    /* Hanya editor yang diizinkan yang boleh melanjutkan */
+    if (!isAllowedEditor(user)) {
+      hideAdmin();
+
+      try {
+        await fbAuth.signOut();
+      } catch (e) {
+        console.error("Firebase sign-out error:", e);
+      }
+
+      showAuth();
+
+      var deniedMsg = $("#firebaseAuth .mlabel:last-of-type");
+
+      if (deniedMsg) {
+        deniedMsg.textContent =
+          "Akun ini tidak diizinkan mengedit website.";
+      }
+
+      return;
+    }
+
+    /* Pengguna sudah terverifikasi dan diizinkan */
     var modal = $("#firebaseAuth");
     if (modal) modal.remove();
 
@@ -475,7 +514,6 @@ function bootCloud() {
         }
       );
 
-      /* Penting: periksa autentikasi dan mode edit */
       refreshAdminAfterAuth(user);
     } catch (e) {
       console.error("Firestore read error:", e);
