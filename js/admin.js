@@ -1,21 +1,55 @@
 
 /* Mode edit: tambah, ubah, hapus foto dan lagu */
-var admin = false, dirty = false;
+var admin = false;
+var dirty = false;
+var mgr = null;
+
+/* Memastikan editor sudah login dengan akun yang diizinkan */
+function editorAuthenticated() {
+  if (
+    typeof fbAuth === "undefined" ||
+    !fbAuth ||
+    !fbAuth.currentUser
+  ) {
+    return false;
+  }
+
+  var user = fbAuth.currentUser;
+
+  return !!(
+    user.emailVerified &&
+    typeof isAllowedEditor === "function" &&
+    isAllowedEditor(user)
+  );
+}
 
 /* Kompres foto */
 function compress(f) {
   return new Promise(function (ok, no) {
-    var i = new Image(), u = URL.createObjectURL(f);
+    var i = new Image();
+    var u = URL.createObjectURL(f);
 
     i.onload = function () {
-      var k = Math.min(1, 800 / Math.max(i.width, i.height));
-      var c = document.createElement("canvas");
+      var k = Math.min(
+        1,
+        800 / Math.max(i.width, i.height)
+      );
 
+      var c = document.createElement("canvas");
       c.width = Math.round(i.width * k);
       c.height = Math.round(i.height * k);
-      c.getContext("2d").drawImage(i, 0, 0, c.width, c.height);
 
+      var ctx = c.getContext("2d");
+
+      if (!ctx) {
+        URL.revokeObjectURL(u);
+        no(new Error("Canvas tidak tersedia"));
+        return;
+      }
+
+      ctx.drawImage(i, 0, 0, c.width, c.height);
       URL.revokeObjectURL(u);
+
       ok(c.toDataURL("image/jpeg", 0.72));
     };
 
@@ -34,12 +68,13 @@ function pick(multi, cb) {
 
   i.type = "file";
   i.accept = "image/*";
-  i.multiple = multi;
+  i.multiple = !!multi;
 
   i.onchange = function () {
-    Promise.all([].map.call(i.files, compress))
+    Promise.all([].map.call(i.files || [], compress))
       .then(cb)
-      .catch(function () {
+      .catch(function (e) {
+        console.error(e);
         toast("Foto gagal dibaca");
       });
   };
@@ -49,16 +84,15 @@ function pick(multi, cb) {
 
 /* Form umum */
 function form(title, fs, o, ok) {
-  var m = el("div", "modal"),
-      f = el("div", "card");
+  var m = el("div", "modal");
+  var f = el("div", "card");
+  var ins = {};
 
   f.appendChild(el("h3", "script", title));
 
-  var ins = {};
-
   fs.forEach(function (x) {
-    var l = el("label", null, x.l),
-        i = el(x.big ? "textarea" : "input");
+    var l = el("label", null, x.l);
+    var i = el(x.big ? "textarea" : "input");
 
     if (x.big) {
       i.rows = 5;
@@ -72,9 +106,9 @@ function form(title, fs, o, ok) {
     ins[x.k] = i;
   });
 
-  var b = el("div", "row"),
-      c = el("button", null, "Batal"),
-      s = el("button", "pri", "OK");
+  var b = el("div", "row");
+  var c = el("button", null, "Batal");
+  var s = el("button", "pri", "OK");
 
   c.type = s.type = "button";
 
@@ -85,9 +119,9 @@ function form(title, fs, o, ok) {
   s.onclick = function () {
     var v = {};
 
-    for (var k in ins) {
+    Object.keys(ins).forEach(function (k) {
       v[k] = ins[k].value.trim();
-    }
+    });
 
     m.remove();
     ok(v);
@@ -98,65 +132,100 @@ function form(title, fs, o, ok) {
   f.appendChild(b);
   m.appendChild(f);
 
-  var target = $("#adminUI") || document.body;
-  target.appendChild(m);
+  (document.querySelector("#adminUI") || document.body)
+    .appendChild(m);
 }
 
 /* Menandai perubahan */
 function chg() {
   dirty = true;
+
+  var saveButton = document.querySelector("#save");
+  if (saveButton) saveButton.disabled = false;
+
   render();
+
+  /* render() mungkin membangun ulang tombol Simpan */
+  saveButton = document.querySelector("#save");
+  if (saveButton) saveButton.disabled = false;
 }
 
 /* Logout Firebase */
 async function logoutAdmin() {
   try {
-    if (typeof firebase !== "undefined" && firebase.auth) {
+    if (typeof fbAuth !== "undefined" && fbAuth) {
+      await fbAuth.signOut();
+    } else if (
+      typeof firebase !== "undefined" &&
+      firebase.auth
+    ) {
       await firebase.auth().signOut();
     }
 
+    admin = false;
+    dirty = false;
+
+    document.body.classList.remove("adm");
+
+    var u = document.querySelector("#adminUI");
+    if (u) {
+      u.querySelectorAll(".menu2").forEach(function (x) {
+        x.remove();
+      });
+    }
+
     /* Kembali ke halaman login editor */
-    window.location.href =
-      window.location.pathname + "?edit";
+    window.location.replace(
+      window.location.pathname + "?edit"
+    );
   } catch (e) {
+    console.error("Logout gagal:", e);
     toast("Gagal keluar: " + e.message);
   }
 }
 
-/* Menu edit */
+/* Membuat menu edit */
 function bar() {
-  var u = $("#adminUI");
+  var u = document.querySelector("#adminUI");
 
-  if (!u) return;
+  if (!u) {
+    console.error("Elemen #adminUI tidak ditemukan.");
+    return;
+  }
 
-  /* Hindari menu garis tiga ganda */
-  var existing = u.querySelector(".menu2");
-  if (existing) existing.remove();
+  /* Cegah menu ganda */
+  u.querySelectorAll(".menu2").forEach(function (x) {
+    x.remove();
+  });
 
-  var b = el("div", "menu2"),
-      h = el("button", "burger", "☰"),
-      p = el("div", "panel"),
-      t = el("button"),
-      s = el("button", "pri");
+  var b = el("div", "menu2");
+  var h = el("button", "burger", "☰");
+  var p = el("div", "panel");
+  var t = el("button");
+  var s = el("button", "pri");
 
   h.type = t.type = s.type = "button";
 
-  t.innerHTML =
-    '<svg class="ic" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg> Teks';
-
-  s.innerHTML =
-    '<svg class="ic" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg> Simpan';
-
   h.setAttribute("aria-label", "Menu edit");
   h.setAttribute("aria-expanded", "false");
+
+  t.innerHTML =
+    '<svg class="ic" viewBox="0 0 24 24">' +
+    '<path d="M4 20h4L19 9l-4-4L4 16z"/>' +
+    "</svg> Teks";
+
+  s.innerHTML =
+    '<svg class="ic" viewBox="0 0 24 24">' +
+    '<path d="M5 12.5l4.5 4.5L19 7.5"/>' +
+    "</svg> Simpan";
+
+  s.id = "save";
+  s.disabled = !dirty;
 
   h.onclick = function () {
     var opened = p.classList.toggle("on");
     h.setAttribute("aria-expanded", String(opened));
   };
-
-  s.id = "save";
-  s.disabled = true;
 
   t.onclick = function () {
     p.classList.remove("on");
@@ -166,7 +235,11 @@ function bar() {
       [
         { k: "her", l: "Nama pacar" },
         { k: "him", l: "Namamu" },
-        { k: "since", l: "Tanggal jadian", type: "datetime-local" },
+        {
+          k: "since",
+          l: "Tanggal jadian",
+          type: "datetime-local"
+        },
         { k: "letter", l: "Isi surat", big: 1 },
         { k: "gift", l: "Isi kupon hadiah", big: 1 }
       ],
@@ -183,27 +256,39 @@ function bar() {
     save();
   };
 
-  var fb = el("button"),
-      lb = el("button"),
-      gb = el("button"),
-      ub = el("button"),
-      out = el("button");
+  var fb = el("button");
+  var lb = el("button");
+  var gb = el("button");
+  var ub = el("button");
+  var out = el("button");
 
   [fb, lb, gb, ub, out].forEach(function (button) {
     button.type = "button";
   });
 
   fb.innerHTML =
-    '<svg class="ic" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="10" r="1.5"/><path d="M4 17l5-4 4 3 3-2 4 3"/></svg> Foto';
+    '<svg class="ic" viewBox="0 0 24 24">' +
+    '<rect x="4" y="5" width="16" height="14" rx="2"/>' +
+    '<circle cx="9" cy="10" r="1.5"/>' +
+    '<path d="M4 17l5-4 4 3 3-2 4 3"/>' +
+    "</svg> Foto";
 
   lb.innerHTML =
-    '<svg class="ic" viewBox="0 0 24 24"><path d="M9 18V6l10-2v12"/><circle cx="7" cy="18" r="2"/><circle cx="17" cy="16" r="2"/></svg> Lagu';
+    '<svg class="ic" viewBox="0 0 24 24">' +
+    '<path d="M9 18V6l10-2v12"/>' +
+    '<circle cx="7" cy="18" r="2"/>' +
+    '<circle cx="17" cy="16" r="2"/>' +
+    "</svg> Lagu";
 
   gb.innerHTML =
-    '<svg class="ic" viewBox="0 0 24 24"><path d="M12 4l2.4 5 5.4.6-4 3.7 1.1 5.4L12 16l-4.9 2.7 1.1-5.4-4-3.7 5.4-.6z"/></svg> Wishlist';
+    '<svg class="ic" viewBox="0 0 24 24">' +
+    '<path d="M12 4l2.4 5 5.4.6-4 3.7 1.1 5.4L12 16l-4.9 2.7 1.1-5.4-4-3.7 5.4-.6z"/>' +
+    "</svg> Wishlist";
 
   ub.innerHTML =
-    '<svg class="ic" viewBox="0 0 24 24"><path d="M12 16V5M7 9l5-5 5 5M5 19h14"/></svg> Terbitkan';
+    '<svg class="ic" viewBox="0 0 24 24">' +
+    '<path d="M12 16V5M7 9l5-5 5 5M5 19h14"/>' +
+    "</svg> Terbitkan";
 
   fb.onclick = function () {
     p.classList.remove("on");
@@ -222,7 +307,12 @@ function bar() {
 
   ub.onclick = function () {
     p.classList.remove("on");
-    publish();
+
+    if (typeof publish === "function") {
+      publish();
+    } else {
+      toast("Fitur Terbitkan tidak tersedia.");
+    }
   };
 
   out.textContent = "Keluar";
@@ -235,14 +325,23 @@ function bar() {
     }
   };
 
-  /* Judul dan email akun Firebase */
+  /* Informasi akun */
   p.appendChild(el("b", null, "Mode edit"));
 
-  var email = (
+  var email = "";
+
+  if (
+    typeof fbAuth !== "undefined" &&
+    fbAuth &&
+    fbAuth.currentUser
+  ) {
+    email = fbAuth.currentUser.email || "";
+  } else if (
     typeof fbUser !== "undefined" &&
-    fbUser &&
-    fbUser.email
-  ) ? fbUser.email : "";
+    fbUser
+  ) {
+    email = fbUser.email || "";
+  }
 
   var accountLabel = el(
     "div",
@@ -252,8 +351,8 @@ function bar() {
 
   accountLabel.style.overflowWrap = "anywhere";
   accountLabel.style.marginBottom = "12px";
-  p.appendChild(accountLabel);
 
+  p.appendChild(accountLabel);
   p.appendChild(t);
   p.appendChild(fb);
   p.appendChild(lb);
@@ -268,14 +367,12 @@ function bar() {
 }
 
 /* Pengelola foto dan lagu */
-var mgr = null;
-
 function manager(title, build) {
-  var m = el("div", "modal"),
-      f = el("div", "card"),
-      body = el("div", "mbody"),
-      r = el("div", "row"),
-      c = el("button", "pri", "Selesai");
+  var m = el("div", "modal");
+  var f = el("div", "card");
+  var body = el("div", "mbody");
+  var r = el("div", "row");
+  var c = el("button", "pri", "Selesai");
 
   f.appendChild(el("h3", "script", title));
   f.appendChild(body);
@@ -290,8 +387,8 @@ function manager(title, build) {
   f.appendChild(r);
   m.appendChild(f);
 
-  var target = $("#adminUI") || document.body;
-  target.appendChild(m);
+  (document.querySelector("#adminUI") || document.body)
+    .appendChild(m);
 
   mgr = {
     refresh: function () {
@@ -312,21 +409,20 @@ function sure(btn, fn) {
 
   btn.dataset.s = "1";
 
-  var t = btn.textContent;
+  var oldText = btn.textContent;
   btn.textContent = "Yakin?";
 
   setTimeout(function () {
     delete btn.dataset.s;
-    btn.textContent = t;
+    btn.textContent = oldText;
   }, 2200);
 }
 
 /* Kartu foto */
 function tile(src, set, del) {
-  var t = el("div", "mt"),
-      tb = el("div", "tb"),
-      e = el("button", null, src ? "Ganti" : "Pilih"),
-      x;
+  var t = el("div", "mt");
+  var tb = el("div", "tb");
+  var e = el("button", null, src ? "Ganti" : "Pilih");
 
   e.type = "button";
 
@@ -339,6 +435,8 @@ function tile(src, set, del) {
       if (r.length) {
         set(r[0]);
         chg();
+
+        if (mgr) mgr.refresh();
       }
     });
   };
@@ -346,13 +444,15 @@ function tile(src, set, del) {
   tb.appendChild(e);
 
   if (src) {
-    x = el("button", null, "Hapus");
+    var x = el("button", null, "Hapus");
     x.type = "button";
 
     x.onclick = function () {
       sure(x, function () {
         del();
         chg();
+
+        if (mgr) mgr.refresh();
       });
     };
 
@@ -367,7 +467,11 @@ function tile(src, set, del) {
 function photoManager() {
   manager("Kelola foto", function (b) {
     b.appendChild(
-      el("p", "mlabel", "Foto di samping surat (halaman Moment)")
+      el(
+        "p",
+        "mlabel",
+        "Foto di samping surat (halaman Moment)"
+      )
     );
 
     var g0 = el("div", "mgrid");
@@ -383,7 +487,12 @@ function photoManager() {
     b.appendChild(g0);
 
     b.appendChild(
-      el("p", "mlabel", "Polaroid (halaman Journey): " + D.photos.length + " dari 12")
+      el(
+        "p",
+        "mlabel",
+        "Polaroid (halaman Journey): " +
+          D.photos.length + " dari 12"
+      )
     );
 
     var g = el("div", "mgrid");
@@ -412,6 +521,7 @@ function photoManager() {
           });
 
           chg();
+          if (mgr) mgr.refresh();
         });
       };
 
@@ -428,10 +538,10 @@ function songManager() {
     var l = el("div", "mlist");
 
     D.songs.forEach(function (song, i) {
-      var r = el("div", "mrow"),
-          t = el("span", null, song.t),
-          e = el("button", null, "✎"),
-          x = el("button", null, "✕");
+      var r = el("div", "mrow");
+      var t = el("span", null, song.t);
+      var e = el("button", null, "✎");
+      var x = el("button", null, "✕");
 
       e.type = x.type = "button";
 
@@ -449,6 +559,7 @@ function songManager() {
         sure(x, function () {
           D.songs.splice(i, 1);
           chg();
+          if (mgr) mgr.refresh();
         });
       };
 
@@ -497,6 +608,7 @@ function dateForm(o) {
       if (n) D.dates.push(o);
 
       chg();
+      if (mgr) mgr.refresh();
     }
   );
 }
@@ -509,10 +621,10 @@ function dateManager() {
     var l = el("div", "mlist");
 
     D.dates.forEach(function (o, i) {
-      var r = el("div", "mrow"),
-          t = el("span", null, o.e + " " + o.t),
-          e = el("button", null, "✎"),
-          x = el("button", null, "✕");
+      var r = el("div", "mrow");
+      var t = el("span", null, o.e + " " + o.t);
+      var e = el("button", null, "✎");
+      var x = el("button", null, "✕");
 
       e.type = x.type = "button";
 
@@ -524,12 +636,15 @@ function dateManager() {
       e.setAttribute("aria-label", "Edit pilihan");
       x.setAttribute("aria-label", "Hapus pilihan");
 
-      e.onclick = function () { dateForm(o); };
+      e.onclick = function () {
+        dateForm(o);
+      };
 
       x.onclick = function () {
         sure(x, function () {
           D.dates.splice(i, 1);
           chg();
+          if (mgr) mgr.refresh();
         });
       };
 
@@ -553,20 +668,31 @@ function dateManager() {
     }
 
     b.appendChild(
-      el("p", "mlabel", "Kalimat pembuka di atas daftar diubah lewat menu Teks (Isi kupon hadiah).")
+      el(
+        "p",
+        "mlabel",
+        "Kalimat pembuka di atas daftar diubah lewat menu Teks (Isi kupon hadiah)."
+      )
     );
   });
 }
 
 /* Simpan data */
 async function save() {
-  var saveButton = $("#save");
+  var saveButton = document.querySelector("#save");
+
+  if (!editorAuthenticated() && !isLocal()) {
+    toast("Sesi editor tidak valid. Silakan login kembali.");
+
+    if (saveButton) saveButton.disabled = false;
+    return;
+  }
 
   if (saveButton) saveButton.disabled = true;
 
   if (!saveData(D)) {
     if (saveButton) saveButton.disabled = false;
-    toast("Terlalu besar, hapus beberapa foto");
+    toast("Data terlalu besar. Hapus beberapa foto lalu coba lagi.");
     return;
   }
 
@@ -576,7 +702,11 @@ async function save() {
     }
 
     dirty = false;
+
     render();
+
+    saveButton = document.querySelector("#save");
+    if (saveButton) saveButton.disabled = true;
 
     toast(
       firebaseConfigured() && !isLocal()
@@ -584,7 +714,10 @@ async function save() {
         : "Tersimpan di perangkat ini"
     );
   } catch (e) {
+    console.error("Gagal menyimpan:", e);
+
     if (saveButton) saveButton.disabled = false;
+
     toast("Gagal menyimpan ke cloud: " + e.message);
   }
 }
@@ -603,11 +736,48 @@ function isLocal() {
 /* Memulai mode edit */
 function initAdmin() {
   var q = new URLSearchParams(location.search);
+  var wantsEdit = q.has(ADMIN_PARAM);
+  var localEdit = isLocal() && !q.has(VIEW_PARAM);
 
-  if (q.has(ADMIN_PARAM) || (isLocal() && !q.has(VIEW_PARAM))) {
-    admin = true;
-    document.body.classList.add("adm");
-    bar();
-    render();
+  /*
+   * Di website publik, mode edit hanya aktif jika:
+   * 1. URL memiliki ?edit
+   * 2. Akun Firebase terverifikasi dan diizinkan
+   */
+  if (!wantsEdit && !localEdit) {
+    admin = false;
+    document.body.classList.remove("adm");
+    return;
   }
+
+  if (!isLocal() && !editorAuthenticated()) {
+    admin = false;
+    document.body.classList.remove("adm");
+    return;
+  }
+
+  admin = true;
+  document.body.classList.add("adm");
+
+  bar();
+  render();
+}
+
+/* Dipanggil setelah status autentikasi Firebase berubah */
+function refreshAdminAfterAuth(user) {
+  if (!user || !user.emailVerified || !isAllowedEditor(user)) {
+    admin = false;
+    document.body.classList.remove("adm");
+
+    var u = document.querySelector("#adminUI");
+    if (u) {
+      u.querySelectorAll(".menu2").forEach(function (x) {
+        x.remove();
+      });
+    }
+
+    return;
+  }
+
+  initAdmin();
 }

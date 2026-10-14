@@ -29,6 +29,7 @@ function allowedEditors() {
   });
 }
 
+/* Memeriksa apakah akun boleh mengedit */
 function isAllowedEditor(user) {
   return !!(
     user &&
@@ -39,7 +40,46 @@ function isAllowedEditor(user) {
   );
 }
 
-/* Membuat elemen dengan gaya terpusat tanpa mengubah CSS global */
+/* Memeriksa sesi editor */
+function editorAuthenticated(user) {
+  user = user || (fbAuth && fbAuth.currentUser);
+
+  return !!(
+    user &&
+    user.emailVerified &&
+    isAllowedEditor(user)
+  );
+}
+
+/* Menyembunyikan menu admin */
+function hideAdmin() {
+  admin = false;
+
+  document.body.classList.remove("adm");
+
+  var menu = document.querySelector(".menu2");
+  if (menu) menu.remove();
+}
+
+/* Menampilkan admin setelah autentikasi valid */
+function refreshAdminAfterAuth(user) {
+  if (!editorAuthenticated(user)) {
+    hideAdmin();
+    return;
+  }
+
+  var params = new URLSearchParams(location.search);
+
+  /* Di website publik, menu hanya tampil pada mode edit */
+  if (!isLocal() && !params.has(ADMIN_PARAM)) {
+    hideAdmin();
+    return;
+  }
+
+  initAdmin();
+}
+
+/* Membuat elemen dengan gaya terpusat */
 function centerElement(element, marginTop) {
   element.style.display = "block";
   element.style.margin = (marginTop || 0) + "px auto 0";
@@ -148,7 +188,27 @@ function showAuth() {
         return;
       }
 
+      /*
+       * Pertahankan maksud masuk ke mode edit.
+       * Jika login dimulai tanpa ?edit, tambahkan parameter.
+       */
+      var params = new URLSearchParams(location.search);
+
+      if (!isLocal() && !params.has(ADMIN_PARAM)) {
+        params.set(ADMIN_PARAM, "");
+        var query = params.toString();
+
+        history.replaceState(
+          null,
+          "",
+          location.pathname +
+            (query ? "?" + query : "") +
+            location.hash
+        );
+      }
+
       msg.textContent = "Login berhasil. Memuat data...";
+      /* Menu admin diaktifkan oleh onAuthStateChanged. */
     } catch (e) {
       console.error("Firebase login error:", e.code, e.message);
       msg.textContent = authError(e);
@@ -167,7 +227,7 @@ function showAuth() {
     if (e.key === "Enter") pass.focus();
   });
 
-  /* Kirim ulang verifikasi untuk akun yang sudah dibuat */
+  /* Mengirim ulang email verifikasi */
   resend.onclick = async function () {
     var mail = email.value.trim();
     var password = pass.value;
@@ -192,8 +252,7 @@ function showAuth() {
       var user = fbAuth.currentUser;
 
       if (!user) {
-        msg.textContent =
-          "Login gagal. Silakan coba lagi.";
+        msg.textContent = "Login gagal. Silakan coba lagi.";
         return;
       }
 
@@ -266,7 +325,7 @@ function authError(e) {
 function bootCloud() {
   if (!firebaseConfigured()) {
     if (!isLocal()) {
-      document.body.classList.remove("adm");
+      hideAdmin();
       toast("Firebase belum dikonfigurasi. Periksa README.");
     } else {
       initAdmin();
@@ -298,12 +357,12 @@ function bootCloud() {
     fbUser = user;
     fbReady = true;
 
-    var modal = $("#firebaseAuth");
-
     if (user && (!user.emailVerified || !isAllowedEditor(user))) {
       var reason = !user.emailVerified
         ? "Email belum terverifikasi. Periksa kotak masuk dan Spam."
         : "Email ini tidak diizinkan mengedit website.";
+
+      hideAdmin();
 
       try {
         await fbAuth.signOut();
@@ -325,10 +384,12 @@ function bootCloud() {
         fbUnsub = null;
       }
 
+      hideAdmin();
       showAuth();
       return;
     }
 
+    var modal = $("#firebaseAuth");
     if (modal) modal.remove();
 
     try {
@@ -358,7 +419,8 @@ function bootCloud() {
         }
       );
 
-      initAdmin();
+      /* Penting: periksa autentikasi dan mode edit */
+      refreshAdminAfterAuth(user);
     } catch (e) {
       console.error("Firestore read error:", e);
       toast("Tidak bisa membaca data cloud: " + e.message);
@@ -368,12 +430,8 @@ function bootCloud() {
 
 /* Menyimpan perubahan ke Firebase */
 async function saveCloud(d) {
-  if (!fbDb || !fbUser || !fbUser.emailVerified) {
-    throw new Error("Login terverifikasi diperlukan.");
-  }
-
-  if (!isAllowedEditor(fbUser)) {
-    throw new Error("Akun ini tidak diizinkan mengedit.");
+  if (!fbDb || !editorAuthenticated(fbUser)) {
+    throw new Error("Login editor terverifikasi diperlukan.");
   }
 
   await fbDb.doc("anniversary/shared").set({
