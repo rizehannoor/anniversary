@@ -17,3 +17,5 @@
 .songs .sg{flex:1;display:flex;justify-content:flex-start;gap:12px;align-items:center;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.25);border-radius:14px;padding:10px 14px;color:inherit;text-decoration:none;text-align:left;font:inherit;font-size:1.2rem;cursor:pointer}
 .sg em{font-style:normal;width:22px;text-align:center;color:#ffb6e6}
 .songs .sg.now{background:rgba(255,31,196,.28);border-color:#ff7fdc}
+.pl .yt-thumb{background-position:center;background-size:cover;color:#fff;text-decoration:none}
+.yt-thumb span{background:rgba(0,0,0,.65);padding:8px 16px;border-radius:999px;font-size:1.2rem}

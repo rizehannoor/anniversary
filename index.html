@@ -33,7 +33,7 @@
     <button class="pick" data-go="s-journey"><i>📷</i><span class="script">Journey</span></button>
     <button class="pick" data-go="s-moment"><i>⏱️</i><span class="script">Moment</span></button>
     <button class="pick" data-go="s-playlist"><i>💿</i><span class="script">Playlist</span></button>
-    <button class="pick" data-go="s-gift"><i>🎁</i><span class="script">Gift</span></button>
+    <button class="pick" data-go="s-gift"><i>🌠</i><span class="script">Wishlist</span></button>
   </div>
 </section>
 
@@ -43,7 +43,6 @@
   <h2 class="script">Our Journey</h2>
   <p class="hint">Perjalanan kita sejak hari jadian</p>
   <div class="wall" id="wall"></div>
-  <button class="adm-only" id="addPhoto">＋ Tambah foto</button>
 </section>
 
 <!-- 4. Moment -->
@@ -64,26 +63,33 @@
   <h2 class="script">Our Playlist</h2>
   <div class="pl" id="pl"></div>
   <ul class="songs" id="songs"></ul>
-  <button class="adm-only" id="addSong">＋ Tambah lagu</button>
 </section>
 
 <!-- 6. Gift -->
 <section class="screen" id="s-gift">
   <button class="back" data-go="s-menu">BACK</button>
-  <h2 class="script">A Little Gift</h2>
-  <button class="gift" id="gift" aria-label="Buka hadiah">🎁</button>
+  <h2 class="script">Our Wishlist</h2>
+  <button class="gift" id="gift" aria-label="Buka wishlist">🌠</button>
   <div class="coupon" id="coupon"></div>
-  <p class="hint" id="giftHint">ketuk hadiahnya</p>
+  <div class="dates" id="dates"></div>
+  <div class="pickres" id="pickRes"></div>
+  <p class="hint" id="giftHint">Ketuk bintangnya, ada kejutan buat kamu</p>
 </section>
 
 <div id="adminUI"></div><div id="toast"></div>
 
 <script src="data/content.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/firebase-sync.js"></script>
 <script src="js/config.js"></script>
 <script src="js/utils.js"></script>
 <script src="js/store.js"></script>
 <script src="js/envelope.js"></script>
 <script src="js/admin.js"></script>
+<script src="js/publish.js"></script>
 <script src="js/journey.js"></script>
 <script src="js/moment.js"></script>
 <script src="js/playlist.js"></script>

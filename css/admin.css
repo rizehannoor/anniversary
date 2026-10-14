@@ -1,6 +1,5 @@
 /* Mode edit: menu ☰, form, tombol tambah/hapus */
 .pol,.frame{cursor:default}
-body.adm .pol,body.adm .frame{cursor:pointer}
 .x,.mini{border:0;background:#ff3b6b;color:#fff;border-radius:999px;cursor:pointer;font:700 .9rem sans-serif}
 .x{position:absolute;top:-8px;right:-8px;width:26px;height:26px}
 .mini{width:42px;border-radius:12px;background:rgba(0,0,0,.45)}
@@ -35,3 +34,14 @@ body.adm .adm-only{display:inline-block}
 .song a{padding:12px 14px}
 .song .mini{width:46px;display:grid;place-items:center;font-size:1rem}
 .ic{width:16px;height:16px;fill:none;stroke:#8c8c8c;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px}
+.mbody{display:grid;gap:10px;overflow-y:auto;max-height:calc(90vh - 150px);align-content:start}
+.mlabel{margin:6px 0 0;font-size:1.05rem;opacity:.85}
+.mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.mt{position:relative;aspect-ratio:3/4;border-radius:8px;background:#f3d6ec center/cover;overflow:hidden;border:1px solid #fff4}
+.mt .tb{position:absolute;left:0;right:0;bottom:0;display:flex;gap:4px;padding:18px 4px 4px;background:linear-gradient(transparent,rgba(0,0,0,.75))}
+.card .tb button{flex:1;min-width:0;padding:5px 0;font-size:.9rem;border-radius:8px}
+.mt.add{display:grid;place-items:center;border:2px dashed #ff7fdc;background:transparent;color:#ffd1ec;font-size:2rem;cursor:pointer;padding:0;min-width:0}
+.mlist{display:grid;gap:8px}
+.mrow{display:flex;align-items:center;gap:8px;background:rgba(0,0,0,.3);border:1px solid #fff3;border-radius:10px;padding:8px 10px}
+.mrow span{flex:1;min-width:0;text-align:left;font-size:1.1rem;overflow-wrap:anywhere}.mrow small{opacity:.8}
+.card .mrow button{min-width:0;padding:6px 12px}

@@ -4,7 +4,7 @@ window.CONTENT = {
   "him": "Namamu",
   "since": "2026-09-28T00:00",
   "letter": "Sayang, terima kasih sudah memilih aku di hari itu, dan terus memilih aku sampai hari ini. Terima kasih untuk sabarmu, tawamu, dan semua hal kecil yang bikin hari-hariku terasa lebih hangat. Aku nggak janji semuanya akan selalu mudah, tapi aku janji akan terus ada dan terus memilih kamu. Happy anniversary, I love you so much, kini dan nanti.",
-  "gift": "Kupon: satu kali kencan spesial untuk merayakan hari jadian kita, kamu yang pilih tempatnya 💕",
+  "gift": "Wishlist jalan kita minggu ini sudah menunggu. Kamu yang pilih mau ke mana, aku yang siapkan 💕",
   "portrait": "",
   "photos": [
     {
@@ -52,6 +52,32 @@ window.CONTENT = {
       "t": "Lagu kita #1",
       "a": "Artis",
       "u": ""
+    }
+  ],
+  "dates": [
+    {
+      "id": "d1",
+      "e": "🌿",
+      "t": "Main ke alam",
+      "d": "Pantai, gunung, atau piknik santai, cari udara segar berdua"
+    },
+    {
+      "id": "d2",
+      "e": "🌆",
+      "t": "Jalan-jalan kota",
+      "d": "Keliling kota, ngopi, dan foto-foto bareng"
+    },
+    {
+      "id": "d3",
+      "e": "🍽️",
+      "t": "Makan enak",
+      "d": "Di tempat yang lagi kamu idam-idamkan"
+    },
+    {
+      "id": "d4",
+      "e": "🎬",
+      "t": "Nonton berdua",
+      "d": "Bioskop, camilan, dan genggaman tangan"
     }
   ]
 };

@@ -4,3 +4,16 @@
 @keyframes shake{25%{transform:rotate(-10deg)}75%{transform:rotate(10deg)}}
 .coupon{display:none;background:var(--paper);color:#3a1a2a;border:3px dashed #b0368f;border-radius:10px;padding:20px 24px;max-width:340px;font-size:1.3rem;font-weight:600;transform:rotate(-1.5deg)}
 .coupon.on{display:block;animation:in .6s ease}
+.dates{display:none;grid-template-columns:repeat(2,1fr);gap:10px;width:min(92vw,420px)}
+.dates.on{display:grid;animation:in .6s ease}
+.dt{display:grid;gap:2px;justify-items:center;align-content:start;text-align:center;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.28);border-radius:14px;padding:12px 8px;color:inherit;font:inherit;cursor:pointer}
+.dt i{font-style:normal;font-size:2rem}.dt b{font-size:1.3rem;font-weight:600}.dt small{font-size:1rem;opacity:.85;line-height:1.2}
+.dt:hover,.dt.sel{background:rgba(255,31,196,.3);border-color:#ff7fdc}
+.pickres{display:none;gap:8px;justify-items:center}.pickres.on{display:grid;animation:in .5s ease}
+.pickres .pt{margin:0;font-size:1.6rem}
+.dt-share{background:var(--green);color:#4a0a5e;border:2px solid #c0149a;border-radius:999px;box-shadow:0 3px 0 #c0149a;padding:8px 18px;font:700 1rem "Cormorant Garamond",serif;cursor:pointer}
+.pickres .ps{margin:0;font-size:1.15rem;opacity:.9;max-width:320px;text-align:center}
+.pickres label{display:grid;gap:6px;justify-items:center;font-size:1.15rem}
+.pickres input{font:1rem Georgia,serif;padding:8px 12px;border-radius:10px;border:1px solid #fff5;background:rgba(0,0,0,.35);color:#fff;color-scheme:dark}
+.dt-share.alt{background:transparent;color:#ffd1ec;box-shadow:none;border-color:#ff7fdc}
+.gift.done{font-size:4rem;cursor:default}

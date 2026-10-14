@@ -5,7 +5,7 @@ function loadData(){
     var q=new URLSearchParams(location.search);
     if(q.has(RESET_PARAM))localStorage.removeItem(STORAGE_KEY);
     var saved=localStorage.getItem(STORAGE_KEY);
-    if(saved)return JSON.parse(saved);
+    if(saved){var d=JSON.parse(saved);if(!d.dates)d.dates=base.dates;return d}
   }catch(e){}
   return base;
 }
