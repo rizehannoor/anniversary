@@ -17,12 +17,12 @@ function firebaseConfigured() {
     c.apiKey &&
     c.projectId &&
     c.appId &&
-    c.apiKey.indexOf("ISI_") !== 0 &&
-    c.projectId.indexOf("ISI_") !== 0
+    !c.apiKey.startsWith("ISI_") &&
+    !c.projectId.startsWith("ISI_")
   );
 }
 
-/* Daftar email yang diizinkan */
+/* Email editor yang diizinkan */
 function allowedEditors() {
   return (window.EDITORS || []).map(function (x) {
     return String(x).trim().toLowerCase();
@@ -33,13 +33,19 @@ function isAllowedEditor(user) {
   return !!(
     user &&
     user.email &&
-    allowedEditors().indexOf(
+    allowedEditors().includes(
       String(user.email).trim().toLowerCase()
-    ) !== -1
+    )
   );
 }
 
-/* Tampilan login: tidak menyediakan pendaftaran akun */
+/* Membuat elemen dengan gaya terpusat tanpa mengubah CSS global */
+function centerElement(element, marginTop) {
+  element.style.display = "block";
+  element.style.margin = (marginTop || 0) + "px auto 0";
+}
+
+/* Tampilan login tanpa pendaftaran akun */
 function showAuth() {
   if ($("#firebaseAuth")) return;
 
@@ -69,11 +75,22 @@ function showAuth() {
   pass.required = true;
 
   var row = el("div", "row");
+  row.style.display = "flex";
+  row.style.justifyContent = "center";
+  row.style.alignItems = "center";
+  row.style.width = "100%";
+
   var login = el("button", "pri", "Masuk");
   var resend = el("button", null, "Kirim ulang verifikasi");
 
   login.type = "button";
   resend.type = "button";
+
+  login.style.display = "block";
+  login.style.margin = "0 auto";
+  login.style.minWidth = "140px";
+
+  centerElement(resend, 12);
 
   [h, p, email, pass, msg].forEach(function (x) {
     f.appendChild(x);
@@ -132,7 +149,6 @@ function showAuth() {
       }
 
       msg.textContent = "Login berhasil. Memuat data...";
-      /* onAuthStateChanged akan melanjutkan proses sinkronisasi. */
     } catch (e) {
       console.error("Firebase login error:", e.code, e.message);
       msg.textContent = authError(e);
@@ -284,7 +300,11 @@ function bootCloud() {
 
     var modal = $("#firebaseAuth");
 
-    if (user && !user.emailVerified) {
+    if (user && (!user.emailVerified || !isAllowedEditor(user))) {
+      var reason = !user.emailVerified
+        ? "Email belum terverifikasi. Periksa kotak masuk dan Spam."
+        : "Email ini tidak diizinkan mengedit website.";
+
       try {
         await fbAuth.signOut();
       } catch (e) {
@@ -293,35 +313,8 @@ function bootCloud() {
 
       showAuth();
 
-      var unverifiedMsg = $(
-        "#firebaseAuth .mlabel:last-of-type"
-      );
-
-      if (unverifiedMsg) {
-        unverifiedMsg.textContent =
-          "Email belum terverifikasi. Periksa kotak masuk dan Spam.";
-      }
-
-      return;
-    }
-
-    if (user && !isAllowedEditor(user)) {
-      try {
-        await fbAuth.signOut();
-      } catch (e) {
-        console.error("Firebase sign-out error:", e);
-      }
-
-      showAuth();
-
-      var deniedMsg = $(
-        "#firebaseAuth .mlabel:last-of-type"
-      );
-
-      if (deniedMsg) {
-        deniedMsg.textContent =
-          "Email ini tidak diizinkan mengedit website.";
-      }
+      var msg = $("#firebaseAuth .mlabel:last-of-type");
+      if (msg) msg.textContent = reason;
 
       return;
     }
